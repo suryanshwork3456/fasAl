@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 router = APIRouter()
 
-@router.get("/home")
+@router.get("/")
 def home():
     return "It is the homepage"
 
