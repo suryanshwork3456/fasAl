@@ -18,3 +18,11 @@ def how_it_works():
 @router.get("/contact")
 def contact():
     return "This is contacts page"
+
+@router.get("/get_started")
+def get_started():
+    return "This is get_started page"
+
+@router.get("/learn_works")
+def learn_works():
+    return "This is learn how video works page"
