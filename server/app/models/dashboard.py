@@ -11,4 +11,4 @@ class Dashboard(Base):
     total_fields: Mapped[float] = mapped_column(Float, nullable=True)
     active_alerts: Mapped[float] = mapped_column(Float, nullable=True)
     next_irrigation: Mapped[float] = mapped_column(Float, nullable=True)
-    recent_alerts: Mapped[float] = mapped_column(Float, nullable=True)
+    # recent_alerts: Mapped[float] = mapped_column(Float, nullable=True)
