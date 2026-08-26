@@ -1,0 +1,5 @@
+"use client";
+import Link from "next/link";
+import { ShieldCheck, Sprout, Zap, Headphones } from "lucide-react";
+import { useLanguage } from "@/hooks/useLanguage";
+export default function Footer(){const {t}=useLanguage();return <footer className="mt-12 border-t bg-white"><div className="container-fasai py-10"><div className="grid grid-cols-2 gap-5 border-b pb-8 md:grid-cols-4">{[["secure",ShieldCheck,"secureText"],["farmerFriendly",Sprout,"farmerText"],["quick",Zap,"quickText"],["support",Headphones,"supportText"]].map(([k,I,desc])=><div key={k} className="flex items-start gap-3"><I className="mt-1 shrink-0 text-fasai-600"/><div><div className="font-bold">{t[k]}</div><div className="text-sm text-slate-500">{t[desc]}</div></div></div>)}</div><div className="flex flex-col justify-between gap-3 pt-6 text-sm text-slate-500 sm:flex-row"><div>© 2026 FasAI. {t.footerCopyright}</div><div className="flex gap-4"><Link href="/about">{t.footerAbout}</Link><Link href="/contact">{t.footerContact}</Link></div></div></div></footer>}
