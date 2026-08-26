@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { --green: #2d8d20; --deep: #103d18; --cream: #f5faf1; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; min-width: 320px; overflow-x: hidden; background: #f7faf5; color: #16331b; font-family: Arial, Helvetica, sans-serif; }
+button, input, select, textarea { font: inherit; }
+button, a { -webkit-tap-highlight-color: transparent; }
+.container-fasai { width: min(1180px, calc(100% - 32px)); margin-inline: auto; }
+.card { @apply bg-white border border-slate-200 rounded-2xl shadow-card; }
+.btn-primary { @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-fasai-600 px-5 py-3 font-semibold text-white shadow-sm transition hover:bg-fasai-700 active:scale-[.99]; }
+.btn-secondary { @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 font-semibold text-slate-800 transition hover:border-fasai-400 hover:text-fasai-700; }
+.page-shell { min-height: calc(100vh - 68px); }
+.section-title { @apply text-3xl sm:text-4xl font-extrabold tracking-tight text-fasai-900; }
+.muted { @apply text-slate-600; }
+.hero-bg { position: relative; isolation: isolate; }
+.hero-bg::after { content:""; position:absolute; inset:0; z-index:-2; background:linear-gradient(90deg, rgba(244,250,240,.98) 0%, rgba(244,250,240,.88) 45%, rgba(244,250,240,.28) 100%); }
+.hero-bg::before { content:""; position:absolute; inset:0; z-index:-3; background-position:center; background-size:cover; background-image:var(--hero-image); transition: background-image .8s ease-in-out; }
+.leaflet-container { height: 100%; width: 100%; border-radius: 18px; }
+/* Keep Leaflet's internal layers from ever floating above app UI (drawer, modals, etc.) */
+.leaflet-pane,
+.leaflet-tile-pane,
+.leaflet-overlay-pane,
+.leaflet-marker-pane,
+.leaflet-tooltip-pane,
+.leaflet-popup-pane,
+.leaflet-top,
+.leaflet-bottom,
+.leaflet-control,
+.leaflet-control-container {
+  z-index: 10 !important;
+}
+@keyframes slideIn { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+@media (max-width: 640px) {
+  .container-fasai { width: min(100% - 20px, 1180px); }
+  .hero-bg::after { background:linear-gradient(90deg, rgba(244,250,240,.97), rgba(244,250,240,.82)); }
+}
