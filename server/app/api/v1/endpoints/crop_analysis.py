@@ -6,12 +6,27 @@ from fastapi.responses import JSONResponse
 from google import genai
 from PIL import Image
 
-# Initialize Gemini Client
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+# Initialize Gemini Client safely — a missing/invalid API key should
+# only break THIS feature when someone calls it, not crash the whole
+# server at startup (same principle as satellite.py's fallback logic).
+try:
+    client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+    _client_error = None
+except Exception as e:
+    client = None
+    _client_error = str(e)
+
 
 async def analyze_crop_image(file: UploadFile):
+    if client is None:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Crop analysis is unavailable — Gemini client failed to initialize: {_client_error}"
+        )
+
     if not file.content_type.startswith("image/"):
-        raise HTTPException(status_code=400, detail="File uploaded is not an image.")
+        raise HTTPException(
+            status_code=400, detail="File uploaded is not an image.")
 
     try:
         contents = await file.read()
@@ -54,12 +69,19 @@ async def analyze_crop_image(file: UploadFile):
 
         # 2. Clean up Markdown backticks if present
         raw_text = response.text.strip()
-        cleaned_text = raw_text.replace("```json", "").replace("```", "").strip()
-        
+        cleaned_text = raw_text.replace(
+            "```json", "").replace("```", "").strip()
+
         # 3. Parse string to Python dict for safe JSON return
         parsed_data = json.loads(cleaned_text)
 
         return JSONResponse(content=parsed_data)
 
+    except json.JSONDecodeError as e:
+        raise HTTPException(
+            status_code=502,
+            detail=f"Gemini returned unparseable output: {str(e)}"
+        )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Analysis failed: {str(e)}")
