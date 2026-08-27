@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 100">
+<rect width="360" height="100" rx="22" fill="#f1faed"/>
+<g fill="#2d8d20"><path d="M42 61c-5-22 6-40 28-47 1 22-8 39-28 47Z"/><path d="M74 57c8-18 24-26 42-25-7 19-20 28-42 25Z"/><path d="M61 76c3-18 15-31 34-36-1 20-11 33-34 36Z"/></g>
+<text x="125" y="64" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="48" fill="#17611d">Fas</text>
+<text x="220" y="64" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="48" fill="#45b52f">AI</text>
+</svg>
