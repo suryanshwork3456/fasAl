@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     PORT: int = 8000
     NEXT_PUBLIC_API_URL : str 
+    GEMINI_API_KEY : str
 
     model_config = SettingsConfigDict(env_file=".env",env_file_encoding="utf-8")
 
