@@ -8,6 +8,7 @@ from alembic import context
 from app.core.config import settings
 from app.db.session import Base
 import app.models 
+from app.models.field_form import FieldForm
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
