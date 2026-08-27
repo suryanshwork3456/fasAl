@@ -1,0 +1,1 @@
+export default function MetricCard({label,value,sub,icon}){return <div className="card p-4 sm:p-5"><div className="flex justify-between items-start"><div className="text-sm text-slate-500">{label}</div><span>{icon}</span></div><div className="text-2xl font-black text-fasai-900 mt-2">{value}</div>{sub&&<div className="text-xs text-slate-500 mt-1">{sub}</div>}</div>}
