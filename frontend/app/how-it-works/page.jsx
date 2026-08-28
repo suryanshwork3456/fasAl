@@ -22,7 +22,7 @@ export default function HowItWorks() {
           </div>
           <div className="flex flex-col justify-center p-5 sm:p-7">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-fasai-100 text-fasai-700"><Icon size={23}/></div>
-            <p className="mt-4 text-xs font-black uppercase tracking-wider text-fasai-600">{index + 1}</p>
+            <p className="mt-4 text-xs font-black uppercase tracking-wider text-fasai-600"></p>
             <h2 className="mt-1 text-xl font-black text-fasai-900">{heading}</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">{description}</p>
           </div>
