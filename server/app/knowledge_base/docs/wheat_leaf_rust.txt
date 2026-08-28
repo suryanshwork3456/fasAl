@@ -1,0 +1,11 @@
+Wheat Leaf Rust
+
+Leaf rust, caused by the fungus Puccinia triticina, is one of the most common wheat diseases worldwide. It primarily affects the leaves but can occasionally spread to leaf sheaths.
+
+Symptoms: Small, round to oval, orange-brown pustules scattered over the upper leaf surface. Pustules are usually powdery and rub off easily onto fingers or clothing, leaving an orange-brown stain. As the disease progresses, leaves may yellow and die prematurely, reducing the plant's ability to photosynthesize and fill grain properly.
+
+Conditions that favor the disease: moderate temperatures (59-77F / 15-25C), high humidity, and dew formation overnight. The fungus spreads through wind-blown spores over long distances, so outbreaks can appear suddenly in a region even without local disease history.
+
+Treatment and management: Apply a triazole or strobilurin-based fungicide at the first sign of pustules, particularly during the stem elongation to flowering growth stages, when yield loss risk is highest. Scout fields weekly during the growing season, focusing on lower leaves first since infection typically starts there. Remove volunteer wheat plants near fields, as they can carry the fungus between seasons.
+
+Prevention tips: Plant leaf rust-resistant wheat varieties, which are widely available and are the most cost-effective long-term control method. Avoid excessive nitrogen fertilization, which can promote lush growth that is more susceptible to infection. Stagger planting dates where practical to avoid the disease's peak spread period.

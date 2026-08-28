@@ -1,0 +1,13 @@
+Nitrogen Deficiency in Crops
+
+Nitrogen is one of the primary nutrients plants need for healthy growth, and it is also the nutrient most commonly deficient in field crops because it is highly mobile in soil and easily lost through leaching or runoff.
+
+Symptoms: The classic sign is uniform yellowing (chlorosis) that starts on the OLDER, lower leaves first and moves upward as the deficiency worsens. This happens because nitrogen is mobile within the plant, so the plant pulls nitrogen from older leaves to support new growth. Affected leaves often yellow starting from the tip and moving along the midrib, while veins may stay slightly greener than the surrounding tissue in early stages. Plants overall appear stunted, pale green to yellow, and produce smaller leaves than healthy plants of the same age.
+
+This differs from most fungal diseases, which tend to cause spots, lesions, or patchy discoloration rather than uniform yellowing, and which usually appear on leaves regardless of age.
+
+Conditions that favor the deficiency: sandy or light soils with poor nutrient retention, heavy rainfall that leaches nitrogen below the root zone, cool soil temperatures that slow microbial nitrogen release, and fields that have not been fertilized or rotated with nitrogen-fixing legumes recently.
+
+Treatment and management: Apply a nitrogen-based fertilizer such as urea, ammonium nitrate, or a balanced NPK fertilizer, following local soil test recommendations for rate and timing. Split applications across the growing season generally work better than one large dose, since they reduce the risk of leaching loss. A soil or tissue test is recommended to confirm nitrogen deficiency before treating, since several other issues can cause similar yellowing.
+
+Prevention tips: Incorporate nitrogen-fixing cover crops such as clover or beans into crop rotations. Test soil nitrogen levels before each planting season. Use slow-release fertilizers on sandy soils to reduce leaching losses.
