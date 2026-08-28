@@ -7,6 +7,9 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     PORT: int = 8000
     NEXT_PUBLIC_API_URL: str
+    copernicus_client_id: str | None = None
+    copernicus_client_secret: str | None = None
+    use_live_satellite: bool = False
     GEMINI_API_KEY: str
 
     # Gemini Models
@@ -26,7 +29,7 @@ class Settings(BaseSettings):
     TOP_K_RESULTS: int = 4
 
     model_config = SettingsConfigDict(
-        env_file=".env", 
+        env_file=".env",
         env_file_encoding="utf-8",
         extra="ignore"
     )
