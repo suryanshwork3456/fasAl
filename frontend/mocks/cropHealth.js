@@ -1,0 +1,1 @@
+export const cropHealth = { score: 82, status: "Healthy", ndvi: 0.72, stressedArea: 8, trend: [64,68,70,74,73,79,82], zones: [{name:"North-West", value: "Healthy"}, {name:"South-East", value:"Water Stress"}] };
