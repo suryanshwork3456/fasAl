@@ -1,0 +1,1 @@
+export const soil = { moisture: 31, ph: 6.7, nitrogen: 72, phosphorus: 54, potassium: 68, organicCarbon: 1.8, texture: "Loamy", recommendation: "Maintain current irrigation and add organic matter after harvest." };

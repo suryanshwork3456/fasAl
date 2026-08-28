@@ -1,0 +1,1 @@
+export const pestRisk = { level: "Medium", score: 48, pests: [{name:"Aphid", risk: 38}, {name:"Stem borer", risk: 52}, {name:"Fungal disease", risk: 61}], note:"Warm and humid conditions can increase disease pressure." };
