@@ -1,11 +1,8 @@
 from datetime import datetime
 
 from sqlalchemy import BigInteger, DateTime, String
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-
-
-class Base(DeclarativeBase):
-    pass
+from sqlalchemy.orm import Mapped, mapped_column
+from app.db.session import Base
 
 
 class User(Base):
