@@ -2,8 +2,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.router import api_v1_router
-from auth import auth_router
-from redis import redis
+from app.api.v1.endpoints.auth import auth_router
+from app.db.redis import redis
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     yield
