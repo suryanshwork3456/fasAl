@@ -1,8 +1,11 @@
 from fastapi import APIRouter, File, UploadFile
-from app.api.v1.endpoints import home, user, field_form, crop_health, ndvi
+from app.api.v1.endpoints import auth, home, user, field_form, crop_health, ndvi, auth
 from app.api.v1.endpoints.crop_analysis import analyze_crop_image
 
 api_v1_router = APIRouter()
+
+# Register authentication router
+api_v1_router.include_router(auth.router, prefix="/auth", tags=["auth"])
 
 # Register standard endpoint routers
 api_v1_router.include_router(home.router, prefix="/home", tags=["home"])
