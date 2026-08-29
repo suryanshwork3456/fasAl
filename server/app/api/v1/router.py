@@ -1,6 +1,6 @@
 from fastapi import APIRouter, File, UploadFile
-from app.api.v1.endpoints import auth, home, user, field_form, crop_health, ndvi, auth, weather
-from app.api.v1.endpoints.crop_analysis import analyze_crop_image
+from app.api.v1.endpoints import auth, home, user, field_form, crop_health, ndvi, auth, weather, analyze
+# from app.api.v1.endpoints.crop_analysis import analyze_crop_image
 
 api_v1_router = APIRouter()
 
@@ -15,7 +15,4 @@ api_v1_router.include_router(crop_health.router, prefix="/crop-health", tags=["c
 api_v1_router.include_router(ndvi.router, prefix="/fields", tags=["ndvi"])
 api_v1_router.include_router(weather.router, prefix="/weather",tags=["weather"])
 
-# Register Crop Analysis route directly onto api_v1_router
-@api_v1_router.post("/crop/analyze", tags=["Crop Analysis"])
-async def analyze_crop(file: UploadFile = File(...)):
-    return await analyze_crop_image(file)
+api_v1_router.include_router(analyze.router, prefix="/crop", tags=["Crop Analysis"])
