@@ -288,16 +288,354 @@
 // }
 
 
+// "use client";
+
+// import Link from "next/link";
+// import { useState, useEffect } from "react";
+// import { Satellite, Map, Bell, Droplets, Bot, FileBarChart, ZoomIn, ZoomOut, ArrowRight } from "lucide-react";
+// import { useLanguage } from "@/hooks/useLanguage";
+// import { alerts } from "@/mocks/alerts";
+// import FieldVisual from "@/components/maps/FieldVisual";
+
+// const layers = ["ndvi", "trueColor", "moisture"];
+
+// export default function DashboardOverview() {
+//   const { t } = useLanguage();
+//   const [layer, setLayer] = useState("ndvi");
+//   const [zoom, setZoom] = useState(1);
+
+//   const [metrics, setMetrics] = useState(null);
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState(null);
+
+//   const zoomIn = () => setZoom(z => Math.min(2.5, +(z + 0.25).toFixed(2)));
+//   const zoomOut = () => setZoom(z => Math.max(1, +(z - 0.25).toFixed(2)));
+
+//   useEffect(() => {
+//     async function fetchDashboardData() {
+//       try {
+//         const response = await fetch("http://localhost:8000/api/v1/user/dashboard");
+//         if (!response.ok) throw new Error(`Server returned status: ${response.status}`);
+//         const json = await response.json();
+//         const rowData = json.data && json.data.length > 0 ? json.data[0] : null;
+//         setMetrics(rowData);
+//       } catch (err) {
+//         console.error("Fetch Error:", err);
+//         setError(err.message);
+//       } finally {
+//         setLoading(false);
+//       }
+//     }
+//     fetchDashboardData();
+//   }, []);
+
+//   return (
+//     <div className="space-y-5 pb-6">
+//       <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+//         <div>
+//           <p className="text-sm font-semibold text-slate-500">{t.welcomeDashboard}</p>
+//           <h1 className="mt-1 text-2xl font-black tracking-tight text-fasai-900 sm:text-3xl">{t.dashboard}</h1>
+//         </div>
+//         <p className="hidden text-sm text-slate-500 sm:block">{t.dashboardDescription}</p>
+//       </div>
+
+//       <section className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+//         {loading ? (
+//           <div className="col-span-full rounded-2xl border border-slate-200 bg-white p-5 text-center font-bold text-slate-500">Loading metrics...</div>
+//         ) : error ? (
+//           <div className="col-span-full rounded-2xl border border-red-200 bg-red-50 p-5 text-center font-bold text-red-600">Error: {error}</div>
+//         ) : !metrics ? (
+//           <div className="col-span-full rounded-2xl border border-slate-200 bg-white p-5 text-center font-bold text-slate-500">No metrics available in database.</div>
+//         ) : (
+//           <>
+//             <MetricCard label={t.overallCropHealth || "Crop Health"} value={metrics.crop_health ?? "N/A"} suffix="/100" sub={t.good || "Good"} icon={<HealthRing score={metrics.crop_health || 0} />} />
+//             <MetricCard label={t.totalFields || "Total Fields"} value={metrics.total_fields ?? 0} sub={t.activeFields || "Active"} icon={<div className="flex h-11 w-11 items-center justify-center rounded-full bg-blue-50 text-blue-600"><Map size={21} /></div>} />
+//             <MetricCard label={t.activeAlerts || "Active Alerts"} value={metrics.active_alerts ?? 0} sub={t.requiresAttention || "Attention Needed"} icon={<div className="flex h-11 w-11 items-center justify-center rounded-full bg-amber-50 text-amber-600"><Bell size={21} /></div>} />
+//             <MetricCard label={t.nextIrrigation || "Next Irrigation"} value={metrics.next_irrigation ?? 0} suffix={` ${t.days || "Days"}`} sub={t.northField || "Scheduled"} icon={<div className="flex h-11 w-11 items-center justify-center rounded-full bg-sky-50 text-sky-600"><Droplets size={21} /></div>} />
+//           </>
+//         )}
+//       </section>
+
+//             <Link href="/diagnose" className="flex items-center justify-between gap-3 rounded-2xl border border-fasai-200 bg-fasai-50 p-4 shadow-sm transition hover:border-fasai-300 sm:p-5">
+//         <div className="flex items-center gap-3">
+//           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-fasai-600 text-white">
+//             <Bot size={20} />
+//           </div>
+//           <div>
+//             <p className="font-black text-fasai-900">{t.analyzeCropPhoto || "Analyze a Crop Photo"}</p>
+//             <p className="text-xs text-fasai-700">{t.analyzeCropPhotoSub || "Upload a leaf photo to get an AI-assisted assessment"}</p>
+//           </div>
+//         </div>
+//         <ArrowRight size={18} className="shrink-0 text-fasai-600" />
+//       </Link>
+
+//       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(300px,.75fr)]">
+//         <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+//           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+//             <div>
+//               <h2 className="text-lg font-black text-slate-900">{t.satellite}</h2>
+//               <p className="mt-1 text-xs text-slate-500">{t.demoNdvi}</p>
+//             </div>
+//             <Link href="/satellite" className="inline-flex min-h-11 items-center gap-1 rounded-xl px-3 text-sm font-bold text-emerald-700 hover:bg-emerald-50">{t.openMap}<ArrowRight size={16}/></Link>
+//           </div>
+
+//           <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+//             <div className="flex rounded-xl bg-slate-100 p-1">
+//               {layers.map(key => <button key={key} onClick={() => setLayer(key)} className={`min-h-11 rounded-lg px-3 text-xs font-bold sm:px-4 ${layer === key ? "bg-white text-emerald-700 shadow-sm" : "text-slate-600"}`}>{t[`layer${key === "ndvi" ? "Ndvi" : key === "trueColor" ? "TrueColor" : "Moisture"}`]}</button>)}
+//             </div>
+//             <div className="flex gap-2">
+//               <button type="button" onClick={zoomIn} disabled={zoom>=2.5} className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 transition hover:border-emerald-300 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-40" aria-label={t.zoomIn}><ZoomIn size={18}/></button>
+//               <button type="button" onClick={zoomOut} disabled={zoom<=1} className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 transition hover:border-emerald-300 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-40" aria-label={t.zoomOut}><ZoomOut size={18}/></button>
+//             </div>
+//           </div>
+
+//           <div className="relative mt-4 h-[280px] overflow-hidden rounded-2xl bg-slate-900 sm:h-[350px]">
+//             <div className="h-full w-full transition-transform duration-300 ease-out" style={{ transform: `scale(${zoom})` }}>
+//               <FieldVisual layer={layer} seed="dashboard-overview" value={layer === "moisture" ? 31 : 0.72} className="h-full w-full" />
+//             </div>
+//             <div className="pointer-events-none absolute inset-0 bg-slate-950/5" />
+//             <div className="absolute left-3 top-3 rounded-lg bg-white/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-600 shadow-sm backdrop-blur">{t.demoLabel || "Demo layer"}</div>
+//             <div className="absolute bottom-3 left-3 rounded-xl bg-white/95 px-3 py-2 text-xs font-bold text-slate-700 shadow-sm backdrop-blur">{layer === "ndvi" ? "NDVI 0.72" : layer === "trueColor" ? t.layerTrueColor : "Moisture 31%"}</div>
+//             <div className="absolute bottom-3 right-3 rounded-xl bg-white/95 px-2.5 py-1.5 text-[11px] font-bold text-slate-500 shadow-sm backdrop-blur">{Math.round(zoom*100)}%</div>
+//           </div>
+//         </section>
+
+//         <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+//           <div className="flex items-center justify-between gap-2">
+//             <h2 className="text-lg font-black text-slate-900">{t.recentAlerts}</h2>
+//             <Link href="/alerts" className="text-sm font-bold text-emerald-700">{t.viewAll}</Link>
+//           </div>
+//           <div className="mt-4 space-y-3">
+//             {alerts.map(a => {
+//               const cfg = a.level === "High" ? { bg: "bg-red-50", text: "text-red-700", label: t.critical, dot: "bg-red-500" } : a.level === "Medium" ? { bg: "bg-amber-50", text: "text-amber-700", label: t.warning, dot: "bg-amber-500" } : { bg: "bg-sky-50", text: "text-sky-700", label: t.info, dot: "bg-sky-500" };
+//               const title = a.id === 1 ? t.highPestRisk : a.id === 2 ? t.waterStress : t.rainfallAlert;
+//               return <div key={a.id} className="rounded-xl border border-slate-100 p-3">
+//                 <div className="flex items-start gap-3"><span className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${cfg.dot}`} /><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm font-extrabold text-slate-900">{title}</p><span className={`rounded-full px-2 py-1 text-[11px] font-bold ${cfg.bg} ${cfg.text}`}>{cfg.label}</span></div><p className="mt-1 text-xs leading-5 text-slate-500">{t[a.textKey]}</p><p className="mt-2 text-[11px] font-semibold text-slate-400">{t[a.timeKey]}</p></div></div>
+//               </div>;
+//             })}
+//           </div>
+//         </section>
+//       </div>
+
+//       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+//         <QuickLink href="/fields" icon={<Map />} label={t.fields} />
+//         <QuickLink href="/satellite" icon={<Satellite />} label={t.satellite} />
+//         <QuickLink href="/diagnose" icon={<Bot />} label={t.assistant} />
+//         <QuickLink href="/analytics" icon={<FileBarChart />} label={t.reports} />
+//       </div>
+//     </div>
+//   );
+// }
+
+// function MetricCard({ label, value, suffix, sub, icon }) {
+//   return <div className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5"><div className="flex items-start justify-between gap-2"><p className="text-xs font-bold leading-5 text-slate-500 sm:text-sm">{label}</p>{icon}</div><div className="mt-3 flex items-baseline gap-1"><span className="text-2xl font-black text-slate-900 sm:text-3xl">{value}</span>{suffix && <span className="text-xs font-bold text-slate-500">{suffix}</span>}</div>{sub && <p className="mt-1 truncate text-xs font-semibold text-slate-500">{sub}</p>}</div>;
+// }
+
+// function HealthRing({ score }) { return <div className="flex h-11 w-11 items-center justify-center rounded-full" style={{background:`conic-gradient(#22c55e ${score * 3.6}deg,#dcfce7 0deg)`}}><div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[10px] font-black text-emerald-700">{score}</div></div>; }
+// function QuickLink({href,icon,label}) { return <Link href={href} className="flex min-h-20 items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200"><span className="text-emerald-600">{icon}</span><span className="text-sm font-extrabold text-slate-800">{label}</span></Link>; }
+
+
+
+
+// "use client";
+
+// import Link from "next/link";
+// import { useState, useEffect } from "react";
+// import { Satellite, Map, Bell, Droplets, Bot, FileBarChart, ZoomIn, ZoomOut, ArrowRight, Leaf, Sprout, Sun } from "lucide-react";
+// import { useLanguage } from "@/hooks/useLanguage";
+// import { alerts } from "@/mocks/alerts";
+// import FieldVisual from "@/components/maps/FieldVisual";
+
+// const layers = ["ndvi", "trueColor", "moisture"];
+
+// export default function DashboardOverview() {
+//   const { t } = useLanguage();
+//   const [layer, setLayer] = useState("ndvi");
+//   const [zoom, setZoom] = useState(1);
+
+//   const [metrics, setMetrics] = useState(null);
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState(null);
+
+//   const zoomIn = () => setZoom(z => Math.min(2.5, +(z + 0.25).toFixed(2)));
+//   const zoomOut = () => setZoom(z => Math.max(1, +(z - 0.25).toFixed(2)));
+
+//   useEffect(() => {
+//     async function fetchDashboardData() {
+//       try {
+//         const response = await fetch("http://localhost:8000/api/v1/user/dashboard");
+//         if (!response.ok) throw new Error(`Server returned status: ${response.status}`);
+//         const json = await response.json();
+//         const rowData = json.data && json.data.length > 0 ? json.data[0] : null;
+//         setMetrics(rowData);
+//       } catch (err) {
+//         console.error("Fetch Error:", err);
+//         setError(err.message);
+//       } finally {
+//         setLoading(false);
+//       }
+//     }
+//     fetchDashboardData();
+//   }, []);
+
+//   return (
+//     <div className="space-y-5 pb-6">
+//       {/* Header with warm gradient */}
+//       <div className="overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-600 via-emerald-600 to-teal-600 p-5 shadow-sm sm:p-7">
+//         <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+//           <div>
+//             <p className="flex items-center gap-1.5 text-sm font-semibold text-emerald-50">
+//               <Sun size={16} /> {t.welcomeDashboard}
+//             </p>
+//             <h1 className="mt-1 text-2xl font-black tracking-tight text-white sm:text-3xl">{t.dashboard}</h1>
+//           </div>
+//           <p className="hidden text-sm text-emerald-50/90 sm:block">{t.dashboardDescription}</p>
+//         </div>
+//       </div>
+
+//       <section className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+//         {loading ? (
+//           <>
+//             {[0, 1, 2, 3].map(i => (
+//               <div key={i} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+//                 <div className="h-3 w-16 animate-pulse rounded-full bg-slate-100" />
+//                 <div className="mt-4 h-7 w-12 animate-pulse rounded-full bg-slate-100" />
+//                 <div className="mt-3 h-3 w-20 animate-pulse rounded-full bg-slate-100" />
+//               </div>
+//             ))}
+//           </>
+//         ) : error ? (
+//           <div className="col-span-full flex flex-col items-center gap-2 rounded-2xl border border-red-100 bg-red-50 p-6 text-center">
+//             <Bell className="text-red-400" size={22} />
+//             <p className="font-bold text-red-700">Couldn't load your farm data</p>
+//             <p className="text-xs text-red-500">{error}</p>
+//           </div>
+//         ) : !metrics ? (
+//           <div className="col-span-full flex flex-col items-center gap-3 rounded-2xl border border-dashed border-emerald-200 bg-emerald-50/60 p-8 text-center">
+//             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+//               <Sprout size={28} />
+//             </div>
+//             <div>
+//               <p className="font-black text-emerald-900">{t.noFieldsYet || "Let's get your first field set up"}</p>
+//               <p className="mt-1 text-sm text-emerald-700/80">
+//                 {t.noFieldsYetSub || "Add a field to start tracking crop health, alerts, and irrigation schedules here."}
+//               </p>
+//             </div>
+//             <Link href="/fields/new" className="btn-primary mt-1 px-5 py-2.5 text-sm">
+//               <Leaf size={16} /> {t.addYourFirstField || "Add Your First Field"}
+//             </Link>
+//           </div>
+//         ) : (
+//           <>
+//             <MetricCard label={t.overallCropHealth || "Crop Health"} value={metrics.crop_health ?? "N/A"} suffix="/100" sub={t.good || "Good"} icon={<HealthRing score={metrics.crop_health || 0} />} />
+//             <MetricCard label={t.totalFields || "Total Fields"} value={metrics.total_fields ?? 0} sub={t.activeFields || "Active"} icon={<div className="flex h-11 w-11 items-center justify-center rounded-full bg-blue-50 text-blue-600"><Map size={21} /></div>} />
+//             <MetricCard label={t.activeAlerts || "Active Alerts"} value={metrics.active_alerts ?? 0} sub={t.requiresAttention || "Attention Needed"} icon={<div className="flex h-11 w-11 items-center justify-center rounded-full bg-amber-50 text-amber-600"><Bell size={21} /></div>} highlight={metrics.active_alerts > 0} />
+//             <MetricCard label={t.nextIrrigation || "Next Irrigation"} value={metrics.next_irrigation ?? 0} suffix={` ${t.days || "Days"}`} sub={t.northField || "Scheduled"} icon={<div className="flex h-11 w-11 items-center justify-center rounded-full bg-sky-50 text-sky-600"><Droplets size={21} /></div>} />
+//           </>
+//         )}
+//       </section>
+
+//       <Link href="/diagnose" className="flex items-center justify-between gap-3 rounded-2xl border border-fasai-200 bg-gradient-to-r from-fasai-50 to-emerald-50 p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-fasai-300 hover:shadow-md sm:p-5">
+//         <div className="flex items-center gap-3">
+//           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-fasai-600 text-white shadow-sm">
+//             <Bot size={20} />
+//           </div>
+//           <div>
+//             <p className="font-black text-fasai-900">{t.analyzeCropPhoto || "Analyze a Crop Photo"}</p>
+//             <p className="text-xs text-fasai-700">{t.analyzeCropPhotoSub || "Upload a leaf photo to get an AI-assisted assessment"}</p>
+//           </div>
+//         </div>
+//         <ArrowRight size={18} className="shrink-0 text-fasai-600" />
+//       </Link>
+
+//       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(300px,.75fr)]">
+//         <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+//           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+//             <div>
+//               <h2 className="text-lg font-black text-slate-900">{t.satellite}</h2>
+//               <p className="mt-1 text-xs text-slate-500">{t.demoNdvi}</p>
+//             </div>
+//             <Link href="/satellite" className="inline-flex min-h-11 items-center gap-1 rounded-xl px-3 text-sm font-bold text-emerald-700 hover:bg-emerald-50">{t.openMap}<ArrowRight size={16}/></Link>
+//           </div>
+
+//           <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+//             <div className="flex rounded-xl bg-slate-100 p-1">
+//               {layers.map(key => <button key={key} onClick={() => setLayer(key)} className={`min-h-11 rounded-lg px-3 text-xs font-bold sm:px-4 ${layer === key ? "bg-white text-emerald-700 shadow-sm" : "text-slate-600"}`}>{t[`layer${key === "ndvi" ? "Ndvi" : key === "trueColor" ? "TrueColor" : "Moisture"}`]}</button>)}
+//             </div>
+//             <div className="flex gap-2">
+//               <button type="button" onClick={zoomIn} disabled={zoom>=2.5} className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 transition hover:border-emerald-300 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-40" aria-label={t.zoomIn}><ZoomIn size={18}/></button>
+//               <button type="button" onClick={zoomOut} disabled={zoom<=1} className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 transition hover:border-emerald-300 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-40" aria-label={t.zoomOut}><ZoomOut size={18}/></button>
+//             </div>
+//           </div>
+
+//           <div className="relative mt-4 h-[280px] overflow-hidden rounded-2xl bg-slate-900 sm:h-[350px]">
+//             <div className="h-full w-full transition-transform duration-300 ease-out" style={{ transform: `scale(${zoom})` }}>
+//               <FieldVisual layer={layer} seed="dashboard-overview" value={layer === "moisture" ? 31 : 0.72} className="h-full w-full" />
+//             </div>
+//             <div className="pointer-events-none absolute inset-0 bg-slate-950/5" />
+//             <div className="absolute left-3 top-3 rounded-lg bg-white/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-600 shadow-sm backdrop-blur">{t.demoLabel || "Demo layer"}</div>
+//             <div className="absolute bottom-3 left-3 rounded-xl bg-white/95 px-3 py-2 text-xs font-bold text-slate-700 shadow-sm backdrop-blur">{layer === "ndvi" ? "NDVI 0.72" : layer === "trueColor" ? t.layerTrueColor : "Moisture 31%"}</div>
+//             <div className="absolute bottom-3 right-3 rounded-xl bg-white/95 px-2.5 py-1.5 text-[11px] font-bold text-slate-500 shadow-sm backdrop-blur">{Math.round(zoom*100)}%</div>
+//           </div>
+//         </section>
+
+//         <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+//           <div className="flex items-center justify-between gap-2">
+//             <h2 className="text-lg font-black text-slate-900">{t.recentAlerts}</h2>
+//             <Link href="/alerts" className="text-sm font-bold text-emerald-700">{t.viewAll}</Link>
+//           </div>
+//           <div className="mt-4 space-y-3">
+//             {alerts.map(a => {
+//               const cfg = a.level === "High" ? { bg: "bg-red-50", text: "text-red-700", label: t.critical, dot: "bg-red-500" } : a.level === "Medium" ? { bg: "bg-amber-50", text: "text-amber-700", label: t.warning, dot: "bg-amber-500" } : { bg: "bg-sky-50", text: "text-sky-700", label: t.info, dot: "bg-sky-500" };
+//               const title = a.id === 1 ? t.highPestRisk : a.id === 2 ? t.waterStress : t.rainfallAlert;
+//               return <div key={a.id} className="rounded-xl border border-slate-100 p-3 transition hover:border-slate-200 hover:bg-slate-50">
+//                 <div className="flex items-start gap-3"><span className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${cfg.dot}`} /><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm font-extrabold text-slate-900">{title}</p><span className={`rounded-full px-2 py-1 text-[11px] font-bold ${cfg.bg} ${cfg.text}`}>{cfg.label}</span></div><p className="mt-1 text-xs leading-5 text-slate-500">{t[a.textKey]}</p><p className="mt-2 text-[11px] font-semibold text-slate-400">{t[a.timeKey]}</p></div></div>
+//               </div>;
+//             })}
+//           </div>
+//         </section>
+//       </div>
+
+//       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+//         <QuickLink href="/fields" icon={<Map />} label={t.fields} />
+//         <QuickLink href="/satellite" icon={<Satellite />} label={t.satellite} />
+//         <QuickLink href="/diagnose" icon={<Bot />} label={t.assistant} />
+//         <QuickLink href="/analytics" icon={<FileBarChart />} label={t.reports} />
+//       </div>
+//     </div>
+//   );
+// }
+
+// function MetricCard({ label, value, suffix, sub, icon, highlight }) {
+//   return (
+//     <div className={`min-w-0 rounded-2xl border p-4 shadow-sm transition sm:p-5 ${highlight ? "border-amber-200 bg-amber-50/40" : "border-slate-200 bg-white"}`}>
+//       <div className="flex items-start justify-between gap-2">
+//         <p className="text-xs font-bold leading-5 text-slate-500 sm:text-sm">{label}</p>{icon}
+//       </div>
+//       <div className="mt-3 flex items-baseline gap-1">
+//         <span className="text-2xl font-black text-slate-900 sm:text-3xl">{value}</span>
+//         {suffix && <span className="text-xs font-bold text-slate-500">{suffix}</span>}
+//       </div>
+//       {sub && <p className="mt-1 truncate text-xs font-semibold text-slate-500">{sub}</p>}
+//     </div>
+//   );
+// }
+
+// function HealthRing({ score }) { return <div className="flex h-11 w-11 items-center justify-center rounded-full" style={{background:`conic-gradient(#22c55e ${score * 3.6}deg,#dcfce7 0deg)`}}><div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[10px] font-black text-emerald-700">{score}</div></div>; }
+// function QuickLink({href,icon,label}) { return <Link href={href} className="flex min-h-20 items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200"><span className="text-emerald-600">{icon}</span><span className="text-sm font-extrabold text-slate-800">{label}</span></Link>; }
+
+
 "use client";
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { Satellite, Map, Bell, Droplets, Bot, FileBarChart, ZoomIn, ZoomOut, ArrowRight } from "lucide-react";
+import { Satellite, Map, Bell, Droplets, Bot, FileBarChart, ZoomIn, ZoomOut, ArrowRight, Leaf, Sprout, Sun } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { alerts } from "@/mocks/alerts";
 import FieldVisual from "@/components/maps/FieldVisual";
 
 const layers = ["ndvi", "trueColor", "moisture"];
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export default function DashboardOverview() {
   const { t } = useLanguage();
@@ -314,7 +652,7 @@ export default function DashboardOverview() {
   useEffect(() => {
     async function fetchDashboardData() {
       try {
-        const response = await fetch("http://localhost:8000/api/v1/user/dashboard");
+        const response = await fetch(`${API_BASE}/api/v1/user/dashboard`);
         if (!response.ok) throw new Error(`Server returned status: ${response.status}`);
         const json = await response.json();
         const rowData = json.data && json.data.length > 0 ? json.data[0] : null;
@@ -331,30 +669,72 @@ export default function DashboardOverview() {
 
   return (
     <div className="space-y-5 pb-6">
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-sm font-semibold text-slate-500">{t.welcomeDashboard}</p>
-          <h1 className="mt-1 text-2xl font-black tracking-tight text-fasai-900 sm:text-3xl">{t.dashboard}</h1>
+      <div className="overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-600 via-emerald-600 to-teal-600 p-5 shadow-sm sm:p-7">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="flex items-center gap-1.5 text-sm font-semibold text-emerald-50">
+              <Sun size={16} /> {t.welcomeDashboard}
+            </p>
+            <h1 className="mt-1 text-2xl font-black tracking-tight text-white sm:text-3xl">{t.dashboard}</h1>
+          </div>
+          <p className="hidden text-sm text-emerald-50/90 sm:block">{t.dashboardDescription}</p>
         </div>
-        <p className="hidden text-sm text-slate-500 sm:block">{t.dashboardDescription}</p>
       </div>
 
       <section className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         {loading ? (
-          <div className="col-span-full rounded-2xl border border-slate-200 bg-white p-5 text-center font-bold text-slate-500">Loading metrics...</div>
+          <>
+            {[0, 1, 2, 3].map(i => (
+              <div key={i} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <div className="h-3 w-16 animate-pulse rounded-full bg-slate-100" />
+                <div className="mt-4 h-7 w-12 animate-pulse rounded-full bg-slate-100" />
+                <div className="mt-3 h-3 w-20 animate-pulse rounded-full bg-slate-100" />
+              </div>
+            ))}
+          </>
         ) : error ? (
-          <div className="col-span-full rounded-2xl border border-red-200 bg-red-50 p-5 text-center font-bold text-red-600">Error: {error}</div>
+          <div className="col-span-full flex flex-col items-center gap-2 rounded-2xl border border-red-100 bg-red-50 p-6 text-center">
+            <Bell className="text-red-400" size={22} />
+            <p className="font-bold text-red-700">Couldn't load your farm data</p>
+            <p className="text-xs text-red-500">{error}</p>
+          </div>
         ) : !metrics ? (
-          <div className="col-span-full rounded-2xl border border-slate-200 bg-white p-5 text-center font-bold text-slate-500">No metrics available in database.</div>
+          <div className="col-span-full flex flex-col items-center gap-3 rounded-2xl border border-dashed border-emerald-200 bg-emerald-50/60 p-8 text-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+              <Sprout size={28} />
+            </div>
+            <div>
+              <p className="font-black text-emerald-900">{t.noFieldsYet || "Let's get your first field set up"}</p>
+              <p className="mt-1 text-sm text-emerald-700/80">
+                {t.noFieldsYetSub || "Add a field to start tracking crop health, alerts, and irrigation schedules here."}
+              </p>
+            </div>
+            <Link href="/fields/new" className="btn-primary mt-1 px-5 py-2.5 text-sm">
+              <Leaf size={16} /> {t.addYourFirstField || "Add Your First Field"}
+            </Link>
+          </div>
         ) : (
           <>
             <MetricCard label={t.overallCropHealth || "Crop Health"} value={metrics.crop_health ?? "N/A"} suffix="/100" sub={t.good || "Good"} icon={<HealthRing score={metrics.crop_health || 0} />} />
             <MetricCard label={t.totalFields || "Total Fields"} value={metrics.total_fields ?? 0} sub={t.activeFields || "Active"} icon={<div className="flex h-11 w-11 items-center justify-center rounded-full bg-blue-50 text-blue-600"><Map size={21} /></div>} />
-            <MetricCard label={t.activeAlerts || "Active Alerts"} value={metrics.active_alerts ?? 0} sub={t.requiresAttention || "Attention Needed"} icon={<div className="flex h-11 w-11 items-center justify-center rounded-full bg-amber-50 text-amber-600"><Bell size={21} /></div>} />
+            <MetricCard label={t.activeAlerts || "Active Alerts"} value={metrics.active_alerts ?? 0} sub={t.requiresAttention || "Attention Needed"} icon={<div className="flex h-11 w-11 items-center justify-center rounded-full bg-amber-50 text-amber-600"><Bell size={21} /></div>} highlight={metrics.active_alerts > 0} />
             <MetricCard label={t.nextIrrigation || "Next Irrigation"} value={metrics.next_irrigation ?? 0} suffix={` ${t.days || "Days"}`} sub={t.northField || "Scheduled"} icon={<div className="flex h-11 w-11 items-center justify-center rounded-full bg-sky-50 text-sky-600"><Droplets size={21} /></div>} />
           </>
         )}
       </section>
+
+      <Link href="/diagnose" className="flex items-center justify-between gap-3 rounded-2xl border border-fasai-200 bg-gradient-to-r from-fasai-50 to-emerald-50 p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-fasai-300 hover:shadow-md sm:p-5">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-fasai-600 text-white shadow-sm">
+            <Bot size={20} />
+          </div>
+          <div>
+            <p className="font-black text-fasai-900">{t.analyzeCropPhoto || "Analyze a Crop Photo"}</p>
+            <p className="text-xs text-fasai-700">{t.analyzeCropPhotoSub || "Upload a leaf photo to get an AI-assisted assessment"}</p>
+          </div>
+        </div>
+        <ArrowRight size={18} className="shrink-0 text-fasai-600" />
+      </Link>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(300px,.75fr)]">
         <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
@@ -396,7 +776,7 @@ export default function DashboardOverview() {
             {alerts.map(a => {
               const cfg = a.level === "High" ? { bg: "bg-red-50", text: "text-red-700", label: t.critical, dot: "bg-red-500" } : a.level === "Medium" ? { bg: "bg-amber-50", text: "text-amber-700", label: t.warning, dot: "bg-amber-500" } : { bg: "bg-sky-50", text: "text-sky-700", label: t.info, dot: "bg-sky-500" };
               const title = a.id === 1 ? t.highPestRisk : a.id === 2 ? t.waterStress : t.rainfallAlert;
-              return <div key={a.id} className="rounded-xl border border-slate-100 p-3">
+              return <div key={a.id} className="rounded-xl border border-slate-100 p-3 transition hover:border-slate-200 hover:bg-slate-50">
                 <div className="flex items-start gap-3"><span className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${cfg.dot}`} /><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm font-extrabold text-slate-900">{title}</p><span className={`rounded-full px-2 py-1 text-[11px] font-bold ${cfg.bg} ${cfg.text}`}>{cfg.label}</span></div><p className="mt-1 text-xs leading-5 text-slate-500">{t[a.textKey]}</p><p className="mt-2 text-[11px] font-semibold text-slate-400">{t[a.timeKey]}</p></div></div>
               </div>;
             })}
@@ -414,13 +794,20 @@ export default function DashboardOverview() {
   );
 }
 
-function MetricCard({ label, value, suffix, sub, icon }) {
-  return <div className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5"><div className="flex items-start justify-between gap-2"><p className="text-xs font-bold leading-5 text-slate-500 sm:text-sm">{label}</p>{icon}</div><div className="mt-3 flex items-baseline gap-1"><span className="text-2xl font-black text-slate-900 sm:text-3xl">{value}</span>{suffix && <span className="text-xs font-bold text-slate-500">{suffix}</span>}</div>{sub && <p className="mt-1 truncate text-xs font-semibold text-slate-500">{sub}</p>}</div>;
+function MetricCard({ label, value, suffix, sub, icon, highlight }) {
+  return (
+    <div className={`min-w-0 rounded-2xl border p-4 shadow-sm transition sm:p-5 ${highlight ? "border-amber-200 bg-amber-50/40" : "border-slate-200 bg-white"}`}>
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-xs font-bold leading-5 text-slate-500 sm:text-sm">{label}</p>{icon}
+      </div>
+      <div className="mt-3 flex items-baseline gap-1">
+        <span className="text-2xl font-black text-slate-900 sm:text-3xl">{value}</span>
+        {suffix && <span className="text-xs font-bold text-slate-500">{suffix}</span>}
+      </div>
+      {sub && <p className="mt-1 truncate text-xs font-semibold text-slate-500">{sub}</p>}
+    </div>
+  );
 }
 
 function HealthRing({ score }) { return <div className="flex h-11 w-11 items-center justify-center rounded-full" style={{background:`conic-gradient(#22c55e ${score * 3.6}deg,#dcfce7 0deg)`}}><div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[10px] font-black text-emerald-700">{score}</div></div>; }
 function QuickLink({href,icon,label}) { return <Link href={href} className="flex min-h-20 items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200"><span className="text-emerald-600">{icon}</span><span className="text-sm font-extrabold text-slate-800">{label}</span></Link>; }
-
-
-
-
