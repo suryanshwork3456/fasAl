@@ -1,3 +1,4 @@
 "use client";
+import { Suspense } from "react";
 import Navbar from "@/components/layout/Navbar"; import Sidebar from "@/components/dashboard/Sidebar"; import Assistant from "@/components/image-analysis/Assistant"; import PageHeader from "@/components/ui/PageHeader"; import {useLanguage} from "@/hooks/useLanguage";
-export default function Diagnose(){const {t}=useLanguage();return <><Navbar dashboard/><Sidebar/><main className="lg:ml-64"><div className="container-fasai py-5"><PageHeader title={t.assistantTitle} description={t.assistantDescription}/><Assistant/></div></main></>}
+export default function Diagnose(){const {t}=useLanguage();return <><Navbar dashboard/><Sidebar/><main className="lg:ml-64"><div className="container-fasai py-5"><PageHeader title={t.assistantTitle} description={t.assistantDescription}/><Suspense fallback={null}><Assistant/></Suspense></div></main></>}

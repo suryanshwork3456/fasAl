@@ -4,12 +4,14 @@ import Navbar from "@/components/layout/Navbar";
 import Sidebar from "@/components/dashboard/Sidebar";
 import PageHeader from "@/components/ui/PageHeader";
 import FieldMap from "@/components/maps/FieldMap";
+import ZoneDetailPanel from "@/components/fields/ZoneDetailPanel";
 import { useLanguage } from "@/hooks/useLanguage";
 import { ZoomIn, ZoomOut } from "lucide-react";
 
 export default function Satellite() {
   const { t } = useLanguage();
   const [layer, setLayer] = useState("ndvi");
+  const [selectedCell, setSelectedCell] = useState(null);
   const mapRef = useRef(null);
 
   return <>
@@ -31,8 +33,9 @@ export default function Satellite() {
             </div>
           </div>
           <div className="mt-4 grid gap-5 xl:grid-cols-[1.35fr_.65fr]">
-            <div className="h-[380px] overflow-hidden rounded-2xl border border-slate-100 sm:h-[520px]"><FieldMap ref={mapRef} zoomControl={false} layer={layer} /></div>
+            <div className="h-[380px] overflow-hidden rounded-2xl border border-slate-100 sm:h-[520px]"><FieldMap ref={mapRef} zoomControl={false} layer={layer} onCellSelect={setSelectedCell} /></div>
             <div className="space-y-4">
+              <ZoneDetailPanel cell={selectedCell} />
               {layer === "moisture" ? (
                 <div className="card p-5"><h2 className="font-black">{t.layerMoisture}</h2><div className="mt-3 text-4xl font-black text-sky-700">31%</div><p className="mt-1 text-sm text-slate-500">{t.satelliteHealthy}</p></div>
               ) : layer === "trueColor" ? (
