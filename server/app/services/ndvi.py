@@ -2,13 +2,18 @@
 # File: app/services/ndvi.py
 # ==========================================================
 """
-NDVI Service — Level 1 (Mock Data)
+NDVI Service — Level 1 (Mock Data) + Level 3 dispatch (Live Data)
 
 Generates realistic-looking NDVI values for a field without touching
 any real satellite data. This is the permanent fallback: every other
 feature (dashboard, map, fusion, alerts) can build against this and
 keep working even if live satellite integration (satellite.py) or
 raster processing (raster.py) isn't ready yet.
+
+get_field_ndvi() now accepts a real field boundary (GeoJSON) fetched
+from the field_form table by the route layer — when live mode is on,
+this real polygon replaces satellite.py's hardcoded placeholder, so
+each field returns its own genuine NDVI grid instead of Bangalore's.
 """
 
 import random
@@ -17,18 +22,22 @@ import math
 from app.services import satellite
 
 
-def get_field_ndvi(field_id: int, rows: int = 3, cols: int = 5) -> dict:
+def get_field_ndvi(field_id: int, boundary: dict | None = None, rows: int = 3, cols: int = 5) -> dict:
     """
     Single entry point for NDVI data. Tries live satellite data if
     enabled, falls back to mock automatically on any failure. Callers
     (routes, other services) never need to know which source they got —
     they just check data_source in the response if they care.
+
+    boundary: real GeoJSON Polygon for this field, if known. If None
+    (or live mode is off), mock data is used instead.
     """
     from app.core.config import settings
 
     if settings.use_live_satellite:
         try:
-            return satellite.get_live_ndvi_grid(field_id, rows=rows, cols=cols)
+            polygon = boundary or satellite.SAMPLE_FIELD_BOUNDARY
+            return satellite.get_live_ndvi_grid(field_id, polygon=polygon, rows=rows, cols=cols)
         except Exception as e:
             print(
                 f"Live satellite fetch failed for field {field_id}, falling back to mock: {e}")
