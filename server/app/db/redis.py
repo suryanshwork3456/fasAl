@@ -1,13 +1,13 @@
-import os
+# import os
 
-import redis as Redis
-from dotenv import load_dotenv
+# import redis as Redis
+# from dotenv import load_dotenv
 
-load_dotenv()
+# load_dotenv()
 
-REDIS_URL = os.getenv("REDIS_URL")
+# REDIS_URL = os.getenv("REDIS_URL")
 
-redis = Redis.from_url(
-    REDIS_URL,
-    decode_responses=True,
-)
+# redis = Redis.from_url(
+#     REDIS_URL,
+#     decode_responses=True,
+# )

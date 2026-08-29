@@ -19,9 +19,9 @@
 #   2. Embedding the user's query at request time (done on every
 #      request, inside rag/retriever.py) -> task_type="RETRIEVAL_QUERY"
 
-# Using the correct task_type for each side measurably improves how
-# relevant the search results are — it's a small detail worth keeping.
-# """
+# # Using the correct task_type for each side measurably improves how
+# # relevant the search results are — it's a small detail worth keeping.
+# # """
 
 # from google import genai
 # from google.genai import types

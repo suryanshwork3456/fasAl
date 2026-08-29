@@ -2,8 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.router import api_v1_router
-from app.api.v1.endpoints.auth import auth_router
-from app.db.redis import redis
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     yield
@@ -21,7 +20,7 @@ app.add_middleware(
 
 # Include Router
 app.include_router(api_v1_router, prefix="/api/v1")
-app.include_router(auth_router,prefix="/api/v1/auth",tags=["Auth"])
+
 
 @app.get("/")
 def root():
