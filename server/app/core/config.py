@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     copernicus_client_secret: str | None = None
     use_live_satellite: bool = False
     GEMINI_API_KEY: str
+    OPENWEATHER_API_KEY: str
 
     # Gemini Models
     GENERATION_MODEL: str = "gemini-2.5-flash"
@@ -45,6 +46,7 @@ settings = Settings()
 
 # Backwards compatibility aliases
 GEMINI_API_KEY = settings.GEMINI_API_KEY
+OPENWEATHER_API_KEY = settings.OPENWEATHER_API_KEY   # <-- add this line
 GENERATION_MODEL = settings.GENERATION_MODEL
 EMBEDDING_MODEL = settings.EMBEDDING_MODEL
 KNOWLEDGE_BASE_DIR = settings.KNOWLEDGE_BASE_DIR
