@@ -4,13 +4,13 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from auth_database import get_db
-from security import create_access_token, get_current_user
-from auth_models import User
-from redis import redis
-from auth_schemas import PhoneRequest, TokenResponse, VerifyOTPRequest
+from app.db.auth_database import get_db
+from app.core.security import create_access_token, get_current_user
+from app.models.auth_models import User
+from app.db.redis import redis
+from app.schemas.schema_auth import PhoneRequest, TokenResponse, VerifyOTPRequest
 
-router = APIRouter(
+auth_router = APIRouter(
     prefix="/auth",
     tags=["Authentication"],
 )
@@ -22,7 +22,7 @@ def normalize_phone(phone: str) -> str:
     return phone.strip().replace(" ", "").replace("-", "")
 
 
-@router.post("/send_otp")
+@auth_router.post("/send_otp")
 def send_otp(data: PhoneRequest):
     phone = normalize_phone(data.phone)
 
@@ -39,7 +39,7 @@ def send_otp(data: PhoneRequest):
     }
 
 
-@router.post("/verify_otp", response_model=TokenResponse)
+@auth_router.post("/verify_otp", response_model=TokenResponse)
 def verify_otp(data: VerifyOTPRequest, db: Session = Depends(get_db)):
     phone = normalize_phone(data.phone)
     otp = data.otp
@@ -76,7 +76,7 @@ def verify_otp(data: VerifyOTPRequest, db: Session = Depends(get_db)):
     }
 
 
-@router.get("/me")
+@auth_router.get("/me")
 def read_current_user(current_user: dict = Depends(get_current_user)):
     """Example protected route - requires 'Authorization: Bearer <token>'."""
     return {
