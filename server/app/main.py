@@ -6,7 +6,7 @@ from app.api.v1.router import api_v1_router
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     yield
-    redis.close()
+
 app = FastAPI(title="fasAI", lifespan=lifespan)
 
 # Add CORS Middleware (Note: origins must be strings)
