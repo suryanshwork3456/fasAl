@@ -12,6 +12,7 @@ server/venv/
 *.env
 !.env.example
 server/.env
+frontend/.env.local
 
 # ==============================
 # Python (Backend)
