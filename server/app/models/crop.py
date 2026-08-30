@@ -1,14 +1,17 @@
 from datetime import datetime
 from typing import List, Optional
-from sqlalchemy import String, DateTime, JSON, create_engine
-from sqlalchemy.orm import Mapped, mapped_column, sessionmaker
+from sqlalchemy import String, DateTime, JSON, create_engine, ForeignKey, Integer
+from sqlalchemy.orm import Mapped, mapped_column, sessionmaker, relationship
 from app.db.session import Base
 
 class CropAnalysis(Base):
     __tablename__ = "crop_analyses"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), index=True, nullable=False)
     crop_name: Mapped[str] = mapped_column(String(100), nullable=False)
+
+    owner: Mapped["User"] = relationship("User")
     status: Mapped[str] = mapped_column(String(50), nullable=False)
     disease_name: Mapped[str] = mapped_column(String(100), default="N/A")
     confidence: Mapped[str] = mapped_column(String(20), nullable=False)
