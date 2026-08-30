@@ -19,7 +19,7 @@ export default function AuthShell({ children, mode }) {
           <div className="pointer-events-none absolute -bottom-28 -left-16 h-80 w-80 rounded-full bg-fasai-300/10 blur-3xl" />
 
           <div className="relative z-10">
-            <Link href="/" className="inline-flex rounded-xl bg-white/95 p-2 shadow-lg"><img src="/images/fasai-brand.png" alt="FasAI" className="h-11 w-auto" /></Link>
+            <Link href="/" className="inline-flex rounded-xl bg-white/95 p-2 shadow-lg"><img src="/images/fasai-brand.png" alt="fasAI" className="h-11 w-auto" /></Link>
           </div>
 
           <div className="relative z-10 flex flex-1 max-w-lg flex-col justify-center gap-8">
@@ -30,7 +30,7 @@ export default function AuthShell({ children, mode }) {
             </div>
 
             <div className="flex items-end gap-5">
-              <img src="/images/auth-farmer.svg" alt="Farmer using FasAI" className="h-36 w-36 shrink-0 rounded-[1.75rem] object-cover shadow-2xl ring-1 ring-white/10 xl:h-44 xl:w-44" />
+              <img src="/images/auth-farmer.svg" alt="Farmer using fasAI" className="h-36 w-36 shrink-0 rounded-[1.75rem] object-cover shadow-2xl ring-1 ring-white/10 xl:h-44 xl:w-44" />
               <div className="grid gap-3 pb-1 text-white/85">
                 <div className="flex items-center gap-2 text-sm font-semibold"><span className="h-2 w-2 rounded-full bg-fasai-400" />{t.farmerFriendly}</div>
                 <div className="flex items-center gap-2 text-sm font-semibold"><span className="h-2 w-2 rounded-full bg-fasai-400" />{t.quick}</div>
@@ -39,7 +39,7 @@ export default function AuthShell({ children, mode }) {
             </div>
           </div>
 
-          <p className="relative z-10 flex items-center gap-2 text-xs font-semibold text-white/60"><ShieldCheck size={15} />FasAI • Smart Crop Intelligence</p>
+          <p className="relative z-10 flex items-center gap-2 text-xs font-semibold text-white/60"><ShieldCheck size={15} />fasAI • Smart Crop Intelligence</p>
         </section>
 
         <section className="flex min-h-dvh flex-col bg-white lg:h-full lg:min-h-0">
@@ -49,9 +49,9 @@ export default function AuthShell({ children, mode }) {
           </div>
           <div className="flex flex-1 items-center justify-center px-4 py-8 sm:px-8 lg:min-h-0 lg:overflow-y-auto lg:px-12 lg:py-10">
             <div className="w-full max-w-md">
-              <div className="mb-6 flex justify-center lg:hidden"><img src="/images/fasai-brand.png" alt="FasAI" className="h-12 w-auto" /></div>
+              <div className="mb-6 flex justify-center lg:hidden"><img src="/images/fasai-brand.png" alt="fasAI" className="h-12 w-auto" /></div>
               <div className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-xl shadow-slate-200/60 sm:p-8">{children}</div>
-              <p className="mt-5 text-center text-xs font-semibold text-slate-400">FasAI • Smart Crop Intelligence</p>
+              <p className="mt-5 text-center text-xs font-semibold text-slate-400">fasAI • Smart Crop Intelligence</p>
             </div>
           </div>
         </section>

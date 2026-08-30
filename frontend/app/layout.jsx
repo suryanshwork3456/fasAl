@@ -6,11 +6,11 @@ import { LanguageProvider } from "@/providers/LanguageProvider";
 import QueryProvider from "@/providers/QueryProvider";
 
 export const metadata = {
-  title: "FasAI | Smart Crop & Farm AI Monitoring",
-  description: "FasAI helps farmers monitor crop health, fields, weather and alerts with AI-powered insights.",
-  applicationName: "FasAI",
-  keywords: ["FasAI", "smart farming", "crop health", "AI agriculture", "farm monitoring"],
-  icons: { icon: "/icon.png", apple: "/icon.png" }
+  title: "fasAI | Smart Crop & Farm AI Monitoring",
+  description: "fasAI helps farmers monitor crop health, fields, weather and alerts with AI-powered insights.",
+  applicationName: "fasAI",
+  keywords: ["fasAI", "smart farming", "crop health", "AI agriculture", "farm monitoring"],
+  // icons: { icon: "/icon.png", apple: "/icon.png" }
 };
 
 export default function RootLayout({ children }) {

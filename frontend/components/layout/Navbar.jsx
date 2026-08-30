@@ -43,11 +43,11 @@ export default function Navbar({ dashboard = false }) {
 
           {dashboard ? (
             <div className="flex min-w-0 cursor-default select-none items-center">
-              <img src="/images/fasai-brand.png" alt="FasAI" className="pointer-events-none h-9 w-auto max-w-[135px] object-contain sm:h-10 sm:max-w-[155px]" />
+              <img src="/images/fasai-brand.png" alt="fasAI" className="pointer-events-none h-9 w-auto max-w-[135px] object-contain sm:h-10 sm:max-w-[155px]" />
             </div>
           ) : (
-            <Link href="/" className="flex min-w-0 items-center" onClick={close} aria-label="FasAI home">
-              <img src="/images/fasai-brand.png" alt="FasAI" className="h-9 w-auto max-w-[135px] object-contain sm:h-11 sm:max-w-[155px]" />
+            <Link href="/" className="flex min-w-0 items-center" onClick={close} aria-label="fasAI home">
+              <img src="/images/fasai-brand.png" alt="fasAI" className="h-9 w-auto max-w-[135px] object-contain sm:h-11 sm:max-w-[155px]" />
             </Link>
           )}
         </div>
@@ -98,7 +98,7 @@ export default function Navbar({ dashboard = false }) {
           >
             {/* Header: single close button only */}
             <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-4 py-4">
-              <img src="/images/fasai-brand.png" alt="FasAI" className="h-8 w-auto max-w-[120px] object-contain" />
+              <img src="/images/fasai-brand.png" alt="fasAI" className="h-8 w-auto max-w-[120px] object-contain" />
               <button type="button" onClick={close} aria-label={t.close} className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100">
                 <X size={20} />
               </button>
