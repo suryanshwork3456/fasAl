@@ -1,139 +1,123 @@
-# import secrets
-
-# from fastapi import APIRouter, Depends, HTTPException
-# from sqlalchemy import select
-# from sqlalchemy.orm import Session
-
-# from app.db.auth_database import get_db
-# from app.core.security import create_access_token, get_current_user
-# from app.models.auth_models import User
-# from app.db.redis import redis
-# from app.schemas.schema_auth import PhoneRequest, TokenResponse, VerifyOTPRequest
-
-# auth_router = APIRouter(
-#     prefix="/auth",
-#     tags=["Authentication"],
-# )
-
-# OTP_EXPIRY = 300
-
-
-# def normalize_phone(phone: str) -> str:
-#     return phone.strip().replace(" ", "").replace("-", "")
-
-
-# @auth_router.post("/send_otp")
-# def send_otp(data: PhoneRequest):
-#     phone = normalize_phone(data.phone)
-
-#     otp = str(secrets.randbelow(10000)).zfill(4)
-
-#     key = f"otp:{phone}"
-
-#     redis.set(key, otp, ex=OTP_EXPIRY)
-
-#     return {
-#         "message": "Otp Generated Successfully",
-#         "otp": otp,
-#         "expires in ": OTP_EXPIRY,
-#     }
-
-
-# @auth_router.post("/verify_otp", response_model=TokenResponse)
-# def verify_otp(data: VerifyOTPRequest, db: Session = Depends(get_db)):
-#     phone = normalize_phone(data.phone)
-#     otp = data.otp
-
-#     key = f"otp:{phone}"
-
-#     stored_otp = redis.get(key)
-
-#     if stored_otp is None:
-#         raise HTTPException(status_code=400, detail="OTP expired or not found")
-
-#     if stored_otp != otp:
-#         raise HTTPException(status_code=400, detail="Invalid OTP")
-
-#     redis.delete(key)
-
-#     result = db.execute(select(User).where(User.phone == phone))
-#     user = result.scalar_one_or_none()
-
-#     if user is None:
-#         user = User(phone=phone)
-#         db.add(user)
-#         db.commit()
-#         db.refresh(user)
-
-#     access_token = create_access_token(user_id=user.id, phone=user.phone)
-
-#     return {
-#         "message": "Authentication successful",
-#         "user_id": user.id,
-#         "phone": user.phone,
-#         "access_token": access_token,
-#         "token_type": "bearer",
-#     }
-
-
-# @auth_router.get("/me")
-# def read_current_user(current_user: dict = Depends(get_current_user)):
-#     """Example protected route - requires 'Authorization: Bearer <token>'."""
-#     return {
-#         "user_id": current_user["sub"],
-#         "phone": current_user["phone"],
-#     }
-
-
-
-from datetime import timedelta
+# app/api/v1/endpoints/auth.py
+from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
-from app.api.v1.endpoints.deps import get_db
+from app.api.v1.endpoints.deps_auth import get_db
 from app.core.config import settings
-from app.core.security import get_password_hash, verify_password, create_access_token
+from app.core.security import create_access_token, generate_otp
 from app.models.user import User
+from app.models.otp import OTPVerification
 from app.schemas.user import UserCreate, UserResponse
+from app.schemas.otp import MobileRequest, OTPVerifyRequest, OTPSentResponse
 from app.schemas.token import Token
 
 router = APIRouter()
 
-@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+
+def _issue_otp(db: Session, mobile_number: str) -> str:
+    # invalidate any previous unused OTPs for this number
+    db.query(OTPVerification).filter(
+        OTPVerification.mobile_number == mobile_number,
+        OTPVerification.is_used == False,
+    ).update({"is_used": True})
+
+    otp_code = generate_otp()
+    otp_entry = OTPVerification(mobile_number=mobile_number, otp_code=otp_code)
+    db.add(otp_entry)
+    db.commit()
+    return otp_code
+
+
+@router.post("/register", response_model=OTPSentResponse, status_code=status.HTTP_201_CREATED)
 def register(user_in: UserCreate, db: Session = Depends(get_db)):
-    existing_user = db.scalar(select(User).where(User.email == user_in.email))
-    if existing_user:
+    existing_user = db.scalar(select(User).where(User.mobile_number == user_in.mobile_number))
+    if existing_user and existing_user.is_verified:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User with this email already exists."
+            detail="User with this mobile number already exists."
         )
-    
-    hashed_password = get_password_hash(user_in.password)
-    new_user = User(email=user_in.email, hashed_password=hashed_password)
-    
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    return new_user
 
-@router.post("/login", response_model=Token)
-def login(
-    form_data: OAuth2PasswordRequestForm = Depends(),
-    db: Session = Depends(get_db)
-):
-    user = db.scalar(select(User).where(User.email == form_data.username))
-    
-    if not user or not verify_password(form_data.password, user.hashed_password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
-            headers={"WWW-Authenticate": "Bearer"},
+    if not existing_user:
+        existing_user = User(
+            full_name=user_in.full_name,
+            mobile_number=user_in.mobile_number,
+            is_verified=False,
         )
-    
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        subject=user.id, expires_delta=access_token_expires
+        db.add(existing_user)
+        db.commit()
+
+    otp_code = _issue_otp(db, user_in.mobile_number)
+
+    return OTPSentResponse(
+        message="OTP sent to your mobile number.",
+        mobile_number=user_in.mobile_number,
+        demo_otp=otp_code,
     )
+
+
+@router.post("/login", response_model=OTPSentResponse)
+def login(payload: MobileRequest, db: Session = Depends(get_db)):
+    user = db.scalar(select(User).where(User.mobile_number == payload.mobile_number))
+    if not user or not user.is_verified:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No account found with this mobile number. Please register first."
+        )
+
+    otp_code = _issue_otp(db, payload.mobile_number)
+
+    return OTPSentResponse(
+        message="OTP sent to your mobile number.",
+        mobile_number=payload.mobile_number,
+        demo_otp=otp_code,
+    )
+
+
+@router.post("/verify-otp", response_model=Token)
+def verify_otp(payload: OTPVerifyRequest, db: Session = Depends(get_db)):
+    otp_entry = db.scalar(
+        select(OTPVerification)
+        .where(
+            OTPVerification.mobile_number == payload.mobile_number,
+            OTPVerification.otp_code == payload.otp,
+            OTPVerification.is_used == False,
+        )
+        .order_by(OTPVerification.id.desc())
+    )
+
+    if not otp_entry:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid OTP.")
+
+    if otp_entry.expires_at < datetime.now(timezone.utc):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="OTP has expired.")
+
+    otp_entry.is_used = True
+
+    user = db.scalar(select(User).where(User.mobile_number == payload.mobile_number))
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+
+    user.is_verified = True
+    db.commit()
+
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(subject=user.id, expires_delta=access_token_expires)
+
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+@router.post("/resend-otp", response_model=OTPSentResponse)
+def resend_otp(payload: MobileRequest, db: Session = Depends(get_db)):
+    user = db.scalar(select(User).where(User.mobile_number == payload.mobile_number))
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+
+    otp_code = _issue_otp(db, payload.mobile_number)
+
+    return OTPSentResponse(
+        message="OTP resent to your mobile number.",
+        mobile_number=payload.mobile_number,
+        demo_otp=otp_code,
+    )
