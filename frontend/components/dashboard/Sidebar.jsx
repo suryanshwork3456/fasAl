@@ -17,7 +17,7 @@ export default function Sidebar() {
     <aside className="fixed bottom-0 left-0 top-[64px] z-40 hidden min-h-[calc(100vh-64px)] w-64 border-r border-slate-200 bg-white lg:flex lg:flex-col">
       <div className="flex min-h-0 flex-1 flex-col px-3 py-5">
         <div className="mb-5 flex items-center gap-3 px-3">
-          <img src="/images/fasai-brand.png" alt="FasAI" className="h-10 w-auto max-w-[140px] object-contain" />
+          <img src="/images/fasai-brand.png" alt="fasAI" className="h-10 w-auto max-w-[140px] object-contain" />
         </div>
         <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto pr-1">
           {dashboardItems.map(item => {
