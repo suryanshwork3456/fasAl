@@ -46,7 +46,7 @@ settings = Settings()
 
 # Backwards compatibility aliases
 GEMINI_API_KEY = settings.GEMINI_API_KEY
-OPENWEATHER_API_KEY = settings.OPENWEATHER_API_KEY   # <-- add this line
+OPENWEATHER_API_KEY = settings.OPENWEATHER_API_KEY 
 GENERATION_MODEL = settings.GENERATION_MODEL
 EMBEDDING_MODEL = settings.EMBEDDING_MODEL
 KNOWLEDGE_BASE_DIR = settings.KNOWLEDGE_BASE_DIR
