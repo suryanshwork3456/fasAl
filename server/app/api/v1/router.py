@@ -1,5 +1,5 @@
 from fastapi import APIRouter, File, UploadFile
-from app.api.v1.endpoints import auth, home, user, field_form, crop_health, ndvi, auth, weather, analyze
+from app.api.v1.endpoints import  home, user, field_form, crop_health, ndvi, auth, weather, analyze
 # from app.api.v1.endpoints.crop_analysis import analyze_crop_image
 
 api_v1_router = APIRouter()
