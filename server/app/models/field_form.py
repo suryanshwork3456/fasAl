@@ -1,5 +1,5 @@
-from sqlalchemy import String, Float, Date, JSON, Enum as SQLEnum
-from sqlalchemy.orm import mapped_column, Mapped
+from sqlalchemy import String, Float, Date,ForeignKey, Integer, JSON, Enum as SQLEnum
+from sqlalchemy.orm import mapped_column, Mapped, relationship
 from datetime import date
 from app.db.session import Base
 from enum import Enum
@@ -25,7 +25,10 @@ class FieldForm(Base):
     __tablename__ = "field_form"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), index=True, nullable=False)
     field_name: Mapped[str] = mapped_column(String, nullable=False)
+
+    owner: Mapped["User"] = relationship("User")
     field_area: Mapped[float] = mapped_column(Float, nullable=False)
     location: Mapped[str] = mapped_column(String, nullable=False)
     date_of_sowing: Mapped[date] = mapped_column(Date, nullable=False)
