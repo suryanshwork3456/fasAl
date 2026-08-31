@@ -12,11 +12,12 @@ export function AuthProvider({ children }) {
     } catch {}
   }, []);
   const login = (data) => {
-    const next = { id: "demo-user", ...data };
-    localStorage.setItem("fasai_user", JSON.stringify(next));
-    localStorage.setItem("fasai_token", "demo-jwt-token");
-    setUser(next);
-  };
+  const { token, ...userData } = data;
+  const next = { id: "demo-user", ...userData };
+  localStorage.setItem("fasai_user", JSON.stringify(next));
+  localStorage.setItem("fasai_token", token || "demo-jwt-token");
+  setUser(next);
+};
   const logout = () => {
     localStorage.removeItem("fasai_user");
     localStorage.removeItem("fasai_token");

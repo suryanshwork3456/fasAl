@@ -4,8 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { Bot, Send, Upload, Camera, Loader2, ImageIcon, AlertTriangle, CheckCircle2, XCircle, X } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { fields } from "@/mocks/fields";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+import { authFetch } from "@/lib/api";
 
 const QUALITY_TIPS_KEYS = [
   "tipGoodLighting", "tipKeepFocus", "tipCaptureAffectedLeaves", "tipAvoidBlur",
@@ -50,29 +49,19 @@ export default function Assistant(){
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await fetch(`${API_BASE}/api/v1/crop/analyze`, {
+      const data = await authFetch("/api/v1/crop/analyze", {
         method: "POST",
         body: formData,
       });
 
-      const withoutSpinner = () => setMessages(m => m.filter(msg => msg.type !== "analyzing"));
-
-      if (!res.ok) {
-        const detail = await res.json().catch(() => null);
-        withoutSpinner();
-        setMessages(m => [...m, {
-          role: "ai", type: "error",
-          text: detail?.detail || "Crop analysis is currently unavailable. Please try again later.",
-        }]);
-        return;
-      }
-
-      const data = await res.json();
-      withoutSpinner();
+      setMessages(m => m.filter(msg => msg.type !== "analyzing"));
       setMessages(m => [...m, { role: "ai", type: "result", data, fieldName }]);
     } catch (err) {
       setMessages(m => m.filter(msg => msg.type !== "analyzing"));
-      setMessages(m => [...m, { role: "ai", type: "error", text: "Couldn't reach the server. Check your connection and try again." }]);
+      setMessages(m => [...m, {
+        role: "ai", type: "error",
+        text: err.message || "Couldn't reach the server. Check your connection and try again.",
+      }]);
     } finally {
       setAnalyzing(false);
     }

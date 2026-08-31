@@ -1,36 +1,33 @@
 "use client";
 import { useEffect, useState } from "react";
+import { authFetch } from "@/lib/api";
 
 export default function useWeather() {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
+  const [noField, setNoField] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
 
     async function fetchWeather() {
-    try {
-  setIsLoading(true);
-  setError(null);
+      try {
+        setIsLoading(true);
+        setError(null);
+        setNoField(false);
 
-  const url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/weather/first-field`;
-  console.log("Fetching weather from:", url);
-
-  const res = await fetch(url);
-  console.log("Response status:", res.status, res.statusText);
-
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    console.log("Error response body:", body);
-    throw new Error(body.detail || "Failed to load weather data.");
-  }
-  const json = await res.json();
-  console.log("Weather data received:", json);
+        const json = await authFetch("/api/v1/weather/first-field");
         if (!cancelled) setData(json);
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Something went wrong.");
+          const message = err instanceof Error ? err.message : "Something went wrong.";
+          // backend sends a 404 with a "no field" style detail message when none exists
+          if (message.toLowerCase().includes("field")) {
+            setNoField(true);
+          } else {
+            setError(message);
+          }
         }
       } finally {
         if (!cancelled) setIsLoading(false);
@@ -38,10 +35,8 @@ export default function useWeather() {
     }
 
     fetchWeather();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
-  return { data, isLoading, error };
+  return { data, isLoading, error, noField };
 }
