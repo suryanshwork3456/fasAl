@@ -1,56 +1,56 @@
-name: SIH Backend CI/CD Pipeline
+# name: SIH Backend CI/CD Pipeline
 
-on:
-  push:
-    branches: [ "main", "dev" ]
-  pull_request:
-    branches: [ "main", "dev" ]
+# on:
+#   push:
+#     branches: [ "main", "dev" ]
+#   pull_request:
+#     branches: [ "main", "dev" ]
 
-jobs:
-  test-and-lint:
-    runs-on: ubuntu-latest
+# jobs:
+#   test-and-lint:
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+#     steps:
+#       - name: Checkout Code
+#         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: 'pip'
+#       - name: Set up Python
+#         uses: actions/setup-python@v5
+#         with:
+#           python-version: '3.11'
+#           cache: 'pip'
 
-      - name: Install System Spatial Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgdal-dev gdal-bin
+#       - name: Install System Spatial Dependencies
+#         run: |
+#           sudo apt-get update
+#           sudo apt-get install -y libgdal-dev gdal-bin
 
-      - name: Install Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r server/requirements.txt
+#       - name: Install Dependencies
+#         run: |
+#           python -m pip install --upgrade pip
+#           pip install -r server/requirements.txt
 
-      - name: Lint Code Style
-        run: |
-          pip install flake8
-          # stop the build if there are Python syntax errors or undefined names
-          flake8 server --count --select=E9,F63,F7,F82 --show-source --statistics
+#       - name: Lint Code Style
+#         run: |
+#           pip install flake8
+#           # stop the build if there are Python syntax errors or undefined names
+#           flake8 server --count --select=E9,F63,F7,F82 --show-source --statistics
 
-  docker-build:
-    needs: test-and-lint
-    runs-on: ubuntu-latest
+#   docker-build:
+#     needs: test-and-lint
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+#     steps:
+#       - name: Checkout Code
+#         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+#       - name: Set up Docker Buildx
+#         uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker Image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./server
-          file: ./server/Dockerfile
-          push: false
-          tags: sih-backend:latest
+#       - name: Build Docker Image
+#         uses: docker/build-push-action@v5
+#         with:
+#           context: ./server
+#           file: ./server/Dockerfile
+#           push: false
+#           tags: sih-backend:latest
