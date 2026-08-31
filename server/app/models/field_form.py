@@ -1,8 +1,12 @@
-from sqlalchemy import String, Float, Date,ForeignKey, Integer, JSON, Enum as SQLEnum
+from typing import TYPE_CHECKING
+from sqlalchemy import String, Float, Date, ForeignKey, Integer, JSON, Enum as SQLEnum
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 from datetime import date
 from app.db.session import Base
 from enum import Enum
+
+if TYPE_CHECKING:
+    from app.models.user import User
 
 
 class CropType(str, Enum):
@@ -28,7 +32,9 @@ class FieldForm(Base):
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), index=True, nullable=False)
     field_name: Mapped[str] = mapped_column(String, nullable=False)
 
-    owner: Mapped["User"] = relationship("User")
+    # Linked explicitly via back_populates
+    owner: Mapped["User"] = relationship("User", back_populates="field_forms")
+    
     field_area: Mapped[float] = mapped_column(Float, nullable=False)
     location: Mapped[str] = mapped_column(String, nullable=False)
     date_of_sowing: Mapped[date] = mapped_column(Date, nullable=False)
