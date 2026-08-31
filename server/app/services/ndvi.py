@@ -90,6 +90,7 @@
 # ==========================================================
 # File: app/services/ndvi.py
 # ==========================================================
+
 """
 NDVI Service — Level 1 (Mock Data) + Level 3 dispatch (Live Data)
 
@@ -115,6 +116,24 @@ import math
 from app.services import satellite
 
 
+# ==========================================================
+# Soil Score
+# ==========================================================
+
+SOIL_SCORES = {
+    "Loamy": 90,      # ideal balance of drainage, nutrient retention, aeration
+    "Alluvial": 85,   # highly fertile, common in river plains — very good for most crops
+    "Blacksoil": 78,  # good moisture retention, well-suited to cotton/wheat
+    "Clayloam": 68,   # retains water well but drainage can be a limiting factor
+    "Sandyloam": 62,  # drains fast, lower nutrient retention
+}
+
+
+def get_soil_score(soil_type: str) -> int:
+    # neutral fallback if an unknown value ever appears
+    return SOIL_SCORES.get(soil_type, 70)
+
+
 def get_field_ndvi(field_id: int, boundary: dict | None = None, rows: int = 3, cols: int = 5) -> dict:
     """
     Full 3x5 grid — one entry point for per-cell NDVI data (used by
@@ -129,10 +148,16 @@ def get_field_ndvi(field_id: int, boundary: dict | None = None, rows: int = 3, c
     if settings.use_live_satellite:
         try:
             polygon = boundary or satellite.SAMPLE_FIELD_BOUNDARY
-            return satellite.get_live_ndvi_grid(field_id, polygon=polygon, rows=rows, cols=cols)
+            return satellite.get_live_ndvi_grid(
+                field_id,
+                polygon=polygon,
+                rows=rows,
+                cols=cols
+            )
         except Exception as e:
             print(
-                f"Live satellite fetch failed for field {field_id}, falling back to mock: {e}")
+                f"Live satellite fetch failed for field {field_id}, falling back to mock: {e}"
+            )
             return get_mock_ndvi(field_id, rows, cols)
 
     return get_mock_ndvi(field_id, rows, cols)
@@ -180,22 +205,33 @@ def get_mock_ndvi(field_id: int, rows: int = 3, cols: int = 5) -> dict:
     ]
 
     grid = []
+
     for r in range(rows):
         row_values = []
+
         for c in range(cols):
             value = baseline + rng.uniform(-0.03, 0.03)
+
             for (sr, sc) in stress_centers:
                 distance = math.sqrt((r - sr) ** 2 + (c - sc) ** 2)
                 influence = max(0.0, 1 - distance / 2.0)
+
                 if influence > 0:
                     stressed_value = rng.uniform(0.25, 0.35)
-                    value = value * (1 - influence) + \
-                        stressed_value * influence
+                    value = (
+                        value * (1 - influence)
+                        + stressed_value * influence
+                    )
+
             value = max(0.0, min(1.0, value))
             row_values.append(round(value, 2))
+
         grid.append(row_values)
 
-    overall = round(sum(sum(row) for row in grid) / (rows * cols), 2)
+    overall = round(
+        sum(sum(row) for row in grid) / (rows * cols),
+        2
+    )
 
     return {
         "field_id": field_id,
@@ -203,3 +239,11 @@ def get_mock_ndvi(field_id: int, rows: int = 3, cols: int = 5) -> dict:
         "overall_ndvi": overall,
         "data_source": "mock",
     }
+
+
+def get_field_overall_ndvi(field_id: int, boundary: dict | None = None) -> dict:
+    """
+    Thin wrapper around get_field_ndvi for callers (like health_score.py)
+    that only care about the overall score + data_source, not the grid.
+    """
+    return get_field_ndvi(field_id, boundary=boundary)

@@ -120,6 +120,8 @@
 //   const [loading, setLoading] = useState(true);
 //   const [error, setError] = useState(null);
 //   const [selectedCell, setSelectedCell] = useState(null);
+//   const [health, setHealth] = useState(null);
+//   const [healthLoading, setHealthLoading] = useState(true);
 
 //   useEffect(() => {
 //     async function loadField() {
@@ -240,37 +242,42 @@ export default function FieldDetail({ id }) {
   const [error, setError] = useState(null);
   const [selectedCell, setSelectedCell] = useState(null);
 
+  const [health, setHealth] = useState(null);
+  const [healthLoading, setHealthLoading] = useState(true);
+
   useEffect(() => {
     let cancelled = false;
 
     async function loadField() {
       try {
-        const fieldRes = await fetch(`${API_BASE}/api/v1/field-form/${id}`);
-        if (!fieldRes.ok) throw new Error("Field not found");
-        const fieldData = await fieldRes.json();
-        if (!cancelled) setF(fieldData);
-
-        // NDVI fetch is separate and allowed to fail quietly — a
-        // field with no boundary yet, or a satellite hiccup, should
-        // still show the field's basic info rather than blank the
-        // whole page.
-        try {
-          const ndviRes = await fetch(`${API_BASE}/api/v1/fields/${id}/ndvi`);
-          if (ndviRes.ok && !cancelled) {
-            setNdvi(await ndviRes.json());
-          }
-        } catch {
-          // silently leave ndvi as null — handled in the UI below
-        }
+        const res = await fetch(`${API_BASE}/api/v1/field-form/${id}`);
+        if (!res.ok) throw new Error("Field not found");
+        const data = await res.json();
+        setF(data);
       } catch (err) {
-        if (!cancelled) setError(err.message);
+        setError(err.message);
       } finally {
-        if (!cancelled) setLoading(false);
+        setLoading(false);
       }
     }
-
     loadField();
-    return () => { cancelled = true; };
+  }, [id]);
+
+  useEffect(() => {
+    async function loadHealthScore() {
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/fields/${id}/health-score`);
+        if (!res.ok) throw new Error("Health score unavailable");
+        const data = await res.json();
+        setHealth(data);
+      } catch (err) {
+        console.error("Health score fetch failed:", err);
+        setHealth(null);
+      } finally {
+        setHealthLoading(false);
+      }
+    }
+    loadHealthScore();
   }, [id]);
 
   const display = (value) => t[value?.toLowerCase()] || value;
@@ -328,12 +335,28 @@ export default function FieldDetail({ id }) {
         </div>
         <div className="flex flex-col gap-3">
           <div className="grid grid-cols-2 gap-3">
-            <Stat label={t.healthScore} value={healthScore !== null ? `${healthScore}/100` : "—"} icon={<Sprout />} />
-            <Stat label={t.ndvi} value={ndvi ? ndvi.overall_ndvi.toFixed(2) : "—"} icon={<Satellite />} />
-            <Stat label={t.moisture} value="—" icon={<Droplets />} />
-            <Stat label={t.pestRisk} value="—" icon={<Bug />} />
-            <Stat label={t.weather} value="28°C" icon={<CloudSun />} />
-            <Stat label={t.soil} value={displaySoil(f.soil_type)} icon={<Droplets />} />
+            <Stat
+              label={t.healthScore}
+              value={healthLoading ? "…" : health ? `${health.health_score}/100` : "—"}
+              icon={<Sprout />}
+            />
+            <Stat
+              label={t.ndvi}
+              value={healthLoading ? "…" : health ? health.ndvi_score : "—"}
+              icon={<Satellite />}
+            />
+            <Stat
+              label={t.soil}
+              value={healthLoading ? "…" : health ? health.soil_score : displaySoil(f.soil_type)}
+              icon={<Droplets />}
+            />
+            <Stat
+              label={t.weather}
+              value={healthLoading ? "…" : health && health.weather_available ? health.weather_score : "N/A"}
+              icon={<CloudSun />}
+            />
+            <Stat label={t.moisture} value={f.moisture ? `${f.moisture}%` : "—"} icon={<Droplets />} />
+            <Stat label={t.pestRisk} value={f.risk ?? "—"} icon={<Bug />} />
           </div>
           {ndvi && (
             <p className="text-xs font-semibold text-slate-400">
