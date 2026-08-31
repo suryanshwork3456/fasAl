@@ -5,9 +5,31 @@ import { User, Phone, ArrowRight } from "lucide-react";
 import AuthShell from "@/components/auth/AuthShell";
 import OtpForm from "@/components/auth/OtpForm";
 import { useLanguage } from "@/hooks/useLanguage";
+import { authApi } from "@/lib/api";
 
 export default function RegisterPage(){
-  const {t}=useLanguage(); const [name,setName]=useState(""); const [mobile,setMobile]=useState(""); const [step,setStep]=useState(1);
+  const {t}=useLanguage();
+  const [name,setName]=useState("");
+  const [mobile,setMobile]=useState("");
+  const [step,setStep]=useState(1);
+  const [loading,setLoading]=useState(false);
+  const [error,setError]=useState("");
+  const [initialOtp,setInitialOtp]=useState(null);
+
+  const submit = async () => {
+    setError("");
+    setLoading(true);
+    try {
+      const res = await authApi.register(name, mobile);
+      setInitialOtp(res.demo_otp);
+      setStep(2);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return <AuthShell mode="register">{step===1 ? <div>
     <h1 className="text-2xl font-black tracking-tight text-fasai-900 sm:text-3xl">{t.createAccount}</h1>
     <p className="mt-2 text-sm leading-6 text-slate-500">{t.registerText}</p>
@@ -27,7 +49,8 @@ export default function RegisterPage(){
         </div>
       </label>
     </div>
-    <button disabled={!name.trim()||mobile.length!==10} onClick={()=>setStep(2)} className="btn-primary mt-6 w-full disabled:cursor-not-allowed disabled:opacity-40"><ArrowRight size={18}/>{t.continue}</button>
+    {error && <p className="mt-3 text-sm font-semibold text-red-600">{error}</p>}
+    <button disabled={!name.trim()||mobile.length!==10||loading} onClick={submit} className="btn-primary mt-6 w-full disabled:cursor-not-allowed disabled:opacity-40"><ArrowRight size={18}/>{loading?"...":t.continue}</button>
     <p className="mt-5 text-center text-sm text-slate-500">{t.login}? <Link className="font-bold text-fasai-700 hover:underline" href="/login">{t.login}</Link></p>
-  </div> : <OtpForm mode="register" mobile={mobile} name={name}/>}</AuthShell>
+  </div> : <OtpForm mode="register" mobile={mobile} name={name} initialOtp={initialOtp} onBack={()=>setStep(1)}/>}</AuthShell>
 }
