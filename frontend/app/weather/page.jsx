@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Sidebar from "@/components/dashboard/Sidebar";
 import PageHeader from "@/components/ui/PageHeader";
@@ -20,7 +21,7 @@ const CONDITION_ICON = {
 
 export default function Weather() {
   const { t } = useLanguage();
-  const { data: weather, isLoading, error } = useWeather();
+  const { data: weather, isLoading, error, noField } = useWeather();
 
   return (
     <>
@@ -34,11 +35,22 @@ export default function Weather() {
             <p className="mt-4 text-sm text-slate-500">{t.loading ?? "Loading..."}</p>
           )}
 
-          {error && !isLoading && (
+          {noField && !isLoading && (
+            <div className="card mt-6 flex flex-col items-center justify-center py-14 text-center">
+              <CloudRain className="mb-3 h-10 w-10 text-slate-400" />
+              <p className="font-bold text-slate-700">No field added yet</p>
+              <p className="mt-1 text-sm text-slate-500">Add your first field to see weather data.</p>
+              <Link href="/fields" className="btn-primary mt-5 inline-flex">
+                {t.addField ?? "Add Field"}
+              </Link>
+            </div>
+          )}
+
+          {error && !isLoading && !noField && (
             <p className="mt-4 text-sm text-red-500">{error}</p>
           )}
 
-          {!isLoading && !error && weather && (
+          {!isLoading && !error && !noField && weather && (
             <>
               <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                 <Metric l={t.temperature} v={`${weather.current.temperature}°C`} I={ThermometerSun} />
