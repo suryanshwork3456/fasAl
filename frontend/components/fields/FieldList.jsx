@@ -4,8 +4,7 @@ import { Search, Plus } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/hooks/useLanguage";
 import FieldVisual from "@/components/maps/FieldVisual";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+import { authFetch } from "@/lib/api";
 
 export default function FieldList() {
   const { t } = useLanguage();
@@ -17,9 +16,7 @@ export default function FieldList() {
   useEffect(() => {
     async function loadFields() {
       try {
-        const res = await fetch(`${API_BASE}/api/v1/field-form/`);
-        if (!res.ok) throw new Error("Failed to load fields");
-        const data = await res.json();
+        const data = await authFetch("/api/v1/field-form/");
         setFields(data);
       } catch (err) {
         setError(err.message);
@@ -44,7 +41,6 @@ export default function FieldList() {
   const list = fields.filter((f) =>
     `${f.field_name} ${f.crop_type} ${f.location}`.toLowerCase().includes(q.toLowerCase())
   );
-
   return (
     <div>
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">

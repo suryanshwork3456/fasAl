@@ -633,6 +633,7 @@ import { Satellite, Map, Bell, Droplets, Bot, FileBarChart, ZoomIn, ZoomOut, Arr
 import { useLanguage } from "@/hooks/useLanguage";
 import { alerts } from "@/mocks/alerts";
 import FieldVisual from "@/components/maps/FieldVisual";
+import { authFetch } from "@/lib/api";
 
 const layers = ["ndvi", "trueColor", "moisture"];
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -648,24 +649,21 @@ export default function DashboardOverview() {
 
   const zoomIn = () => setZoom(z => Math.min(2.5, +(z + 0.25).toFixed(2)));
   const zoomOut = () => setZoom(z => Math.max(1, +(z - 0.25).toFixed(2)));
-
-  useEffect(() => {
-    async function fetchDashboardData() {
-      try {
-        const response = await fetch(`${API_BASE}/api/v1/user/dashboard`);
-        if (!response.ok) throw new Error(`Server returned status: ${response.status}`);
-        const json = await response.json();
-        const rowData = json.data && json.data.length > 0 ? json.data[0] : null;
-        setMetrics(rowData);
-      } catch (err) {
-        console.error("Fetch Error:", err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
+useEffect(() => {
+  async function fetchDashboardData() {
+    try {
+      const json = await authFetch("/api/v1/user/dashboard");
+      const rowData = json.data && json.data.length > 0 ? json.data[0] : null;
+      setMetrics(rowData);
+    } catch (err) {
+      console.error("Fetch Error:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-    fetchDashboardData();
-  }, []);
+  }
+  fetchDashboardData();
+}, []);
 
   return (
     <div className="space-y-5 pb-6">

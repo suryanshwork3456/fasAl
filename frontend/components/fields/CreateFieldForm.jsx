@@ -155,8 +155,7 @@ import { useRouter } from "next/navigation";
 import FieldMap from "@/components/maps/FieldMap";
 import { useLanguage } from "@/hooks/useLanguage";
 import { polygonAreaHectares } from "@/lib/geo";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+import { authFetch } from "@/lib/api";
 
 export default function CreateFieldForm() {
   const { t } = useLanguage();
@@ -176,7 +175,6 @@ export default function CreateFieldForm() {
 
   const set = (k, v) => setForm({ ...form, [k]: v });
 
-  // Auto-calculate area from the drawn boundary instead of manual typing.
   useEffect(() => {
     const hectares = polygonAreaHectares(boundary);
     if (hectares !== null) set("area", hectares);
@@ -191,7 +189,6 @@ export default function CreateFieldForm() {
     ["Vegetables", t.vegetables],
   ];
 
-  // values must match backend SoilType enum exactly: Loamy, Clayloam, Sandyloam, Blacksoil, Alluvial
   const soilOptions = [
     ["Loamy", t.loamy],
     ["Clayloam", t.clayLoam],
@@ -204,9 +201,8 @@ export default function CreateFieldForm() {
     setSaving(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE}/api/v1/field-form/`, {
+      await authFetch("/api/v1/field-form/", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           field_name: form.name,
           field_area: form.area ? parseFloat(form.area) : 0,
@@ -219,12 +215,6 @@ export default function CreateFieldForm() {
         }),
       });
 
-      if (!res.ok) {
-        const detail = await res.json().catch(() => null);
-        throw new Error(detail?.detail ? JSON.stringify(detail.detail) : "Failed to create field");
-      }
-
-      await res.json();
       router.push(`/fields`);
     } catch (err) {
       setError(err.message);
@@ -232,7 +222,6 @@ export default function CreateFieldForm() {
       setSaving(false);
     }
   }
-
   return (
     <div>
       <div className="mb-5">

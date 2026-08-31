@@ -111,8 +111,7 @@ import { ArrowLeft, Satellite, Sprout, CloudSun, Droplets, Bug } from "lucide-re
 import FieldMap from "@/components/maps/FieldMap";
 import ZoneDetailPanel from "@/components/fields/ZoneDetailPanel";
 import { useLanguage } from "@/hooks/useLanguage";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+import { authFetch } from "@/lib/api";
 
 export default function FieldDetail({ id }) {
   const { t } = useLanguage();
@@ -124,9 +123,7 @@ export default function FieldDetail({ id }) {
   useEffect(() => {
     async function loadField() {
       try {
-        const res = await fetch(`${API_BASE}/api/v1/field-form/${id}`);
-        if (!res.ok) throw new Error("Field not found");
-        const data = await res.json();
+        const data = await authFetch(`/api/v1/field-form/${id}`);
         setF(data);
       } catch (err) {
         setError(err.message);
