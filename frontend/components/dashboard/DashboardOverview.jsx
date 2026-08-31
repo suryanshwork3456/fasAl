@@ -649,21 +649,29 @@ export default function DashboardOverview() {
 
   const zoomIn = () => setZoom(z => Math.min(2.5, +(z + 0.25).toFixed(2)));
   const zoomOut = () => setZoom(z => Math.max(1, +(z - 0.25).toFixed(2)));
-useEffect(() => {
-  async function fetchDashboardData() {
-    try {
-      const json = await authFetch("/api/v1/user/dashboard");
-      const rowData = json.data && json.data.length > 0 ? json.data[0] : null;
-      setMetrics(rowData);
-    } catch (err) {
-      console.error("Fetch Error:", err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
+
+  useEffect(() => {
+    async function fetchDashboardData() {
+      try {
+        const token = localStorage.getItem("fasai_token");
+const response = await fetch(`${API_BASE}/api/v1/user/dashboard`, {
+  headers: {
+    Authorization: `Bearer ${token}`,
+  },
+});
+        if (!response.ok) throw new Error(`Server returned status: ${response.status}`);
+        const json = await response.json();
+        const rowData = json.data && json.data.length > 0 ? json.data[0] : null;
+        setMetrics(rowData);
+      } catch (err) {
+        console.error("Fetch Error:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
     }
-  }
-  fetchDashboardData();
-}, []);
+    fetchDashboardData();
+  }, []);
 
   return (
     <div className="space-y-5 pb-6">
@@ -756,7 +764,12 @@ useEffect(() => {
 
           <div className="relative mt-4 h-[280px] overflow-hidden rounded-2xl bg-slate-900 sm:h-[350px]">
             <div className="h-full w-full transition-transform duration-300 ease-out" style={{ transform: `scale(${zoom})` }}>
-              <FieldVisual layer={layer} seed="dashboard-overview" value={layer === "moisture" ? 31 : 0.72} className="h-full w-full" />
+              <FieldVisual
+                layer={layer}
+                seed={metrics?.satellite?.field_name || "dashboard-overview"}
+                value={layer === "moisture" ? (metrics?.satellite?.moisture ?? 31) : (metrics?.satellite?.ndvi ?? 0.72)}
+                className="h-full w-full"
+/>
             </div>
             <div className="pointer-events-none absolute inset-0 bg-slate-950/5" />
             <div className="absolute left-3 top-3 rounded-lg bg-white/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-600 shadow-sm backdrop-blur">{t.demoLabel || "Demo layer"}</div>

@@ -1,4 +1,5 @@
 
+
 "use client";
 import Link from "next/link";
 import { Sprout, Droplets, Bug, MapPin, Camera, Search } from "lucide-react";
@@ -17,6 +18,12 @@ export default function ZoneDetailPanel({ cell, fieldId }) {
   }
 
   const statusLabel = t[STATUS_LABEL_KEY[cell.status]] || cell.status;
+  const hasMoisture = typeof cell.moisture === "number";
+  const hasPestRisk = typeof cell.pestRisk === "number";
+  // Real satellite/mock cells only ever give us NDVI — moisture and
+  // pest risk aren't available from this data source yet. Adjust the
+  // grid so it doesn't leave two empty slots when they're missing.
+  const statCount = 1 + (hasMoisture ? 1 : 0) + (hasPestRisk ? 1 : 0);
 
   return (
     <div className="card p-5">
@@ -24,22 +31,26 @@ export default function ZoneDetailPanel({ cell, fieldId }) {
         <MapPin size={14} />
         {t.zoneLabel || "Zone"} R{cell.row + 1}-C{cell.col + 1}
       </div>
-      <div className="mt-3 grid grid-cols-3 gap-3 text-center">
+      <div className={`mt-3 grid gap-3 text-center`} style={{ gridTemplateColumns: `repeat(${statCount}, minmax(0, 1fr))` }}>
         <div>
           <Sprout size={16} className="mx-auto text-fasai-600" />
-          <div className="mt-1 text-lg font-black">{cell.ndvi}</div>
+          <div className="mt-1 text-lg font-black">{typeof cell.ndvi === "number" ? cell.ndvi.toFixed(2) : cell.ndvi}</div>
           <div className="text-[11px] text-slate-500">{t.ndvi}</div>
         </div>
-        <div>
-          <Droplets size={16} className="mx-auto text-sky-600" />
-          <div className="mt-1 text-lg font-black">{cell.moisture}%</div>
-          <div className="text-[11px] text-slate-500">{t.moisture}</div>
-        </div>
-        <div>
-          <Bug size={16} className="mx-auto text-amber-600" />
-          <div className="mt-1 text-lg font-black">{cell.pestRisk}%</div>
-          <div className="text-[11px] text-slate-500">{t.pestRisk}</div>
-        </div>
+        {hasMoisture && (
+          <div>
+            <Droplets size={16} className="mx-auto text-sky-600" />
+            <div className="mt-1 text-lg font-black">{cell.moisture}%</div>
+            <div className="text-[11px] text-slate-500">{t.moisture}</div>
+          </div>
+        )}
+        {hasPestRisk && (
+          <div>
+            <Bug size={16} className="mx-auto text-amber-600" />
+            <div className="mt-1 text-lg font-black">{cell.pestRisk}%</div>
+            <div className="text-[11px] text-slate-500">{t.pestRisk}</div>
+          </div>
+        )}
       </div>
       <div className={`mt-4 rounded-lg px-3 py-2 text-center text-sm font-bold ${
         cell.status === "healthy" ? "bg-fasai-50 text-fasai-700" :
@@ -51,11 +62,18 @@ export default function ZoneDetailPanel({ cell, fieldId }) {
         <Link href={fieldId ? `/fields/${fieldId}` : "/fields"} className="btn-secondary flex flex-1 items-center justify-center gap-2 text-sm">
           <Search size={16} />{t.inspect || "Inspect"}
         </Link>
-        <Link href={fieldId ? `/diagnose?field=${fieldId}` : "/diagnose"} className="btn-primary flex flex-1 items-center justify-center gap-2 text-sm">
+        <Link
+          href={fieldId ? `/diagnose?field=${fieldId}&row=${cell.row}&col=${cell.col}` : "/diagnose"}
+          className="btn-primary flex flex-1 items-center justify-center gap-2 text-sm"
+        >
           <Camera size={16} />{t.uploadPhoto || "Upload Photo"}
         </Link>
       </div>
-      <p className="mt-3 text-[11px] text-slate-400">{t.demoDataLabel || "Demo data — not a real satellite reading."}</p>
+      {!hasMoisture && !hasPestRisk && (
+        <p className="mt-3 text-[11px] text-slate-400">
+          NDVI shown is from real satellite/mock data — moisture and pest risk aren't available for individual zones yet.
+        </p>
+      )}
     </div>
   );
 }
