@@ -108,18 +108,16 @@
 // });
 
 // export default FieldMap;
-
-
 "use client";
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { Search, LocateFixed, Loader2 } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
-import { NDVI_RAMP, MOISTURE_RAMP, mulberry32, getNdviStatus } from "@/lib/ndvi";
+import { NDVI_RAMP, MOISTURE_RAMP, STATUS_FILL, mulberry32, getNdviStatus } from "@/lib/ndvi";
 
 const DEFAULT_BOUNDS = [[29.694, 76.978], [29.700, 76.995], [29.685, 77.005], [29.677, 76.988]];
 
 const FieldMap = forwardRef(function FieldMap(
-  { draw = false, onBoundaryChange, zoomControl = true, layer = "trueColor", bounds, fieldLabel, ndviValue, moistureValue, onCellSelect },
+  { draw = false, onBoundaryChange, zoomControl = true, layer = "trueColor", bounds, fieldLabel, ndviValue, moistureValue, onCellSelect, grid = null },
   ref
 ) {
   const elRef = useRef(null);
@@ -152,7 +150,8 @@ const FieldMap = forwardRef(function FieldMap(
       const lngs = fieldBounds.map(p => p[1]);
       const center = [(Math.min(...lats) + Math.max(...lats)) / 2, (Math.min(...lngs) + Math.max(...lngs)) / 2];
 
-      map = L.map(elRef.current, { zoomControl }).setView(center, 13);
+      const boundsLatLng = L.latLngBounds(fieldBounds.map(p => L.latLng(p[0], p[1])));
+      map = L.map(elRef.current, { zoomControl }).fitBounds(boundsLatLng, { padding: [40, 40], maxZoom: 18 });
       mapRef.current = map;
       overlayGroupRef.current = L.layerGroup().addTo(map);
 
@@ -176,6 +175,8 @@ const FieldMap = forwardRef(function FieldMap(
     const map = mapRef.current;
     if (!ready || !L || !map) return;
 
+    // console.log("FieldMap debug:", { ready, layer, gridLength: grid?.length, gridSample: grid?.[0] });
+
     if (baseLayerRef.current) { map.removeLayer(baseLayerRef.current); baseLayerRef.current = null; }
     if (layer === "trueColor") {
       baseLayerRef.current = L.tileLayer(
@@ -191,45 +192,89 @@ const FieldMap = forwardRef(function FieldMap(
     if (group) group.clearLayers();
     if (!draw && group && (layer === "ndvi" || layer === "moisture")) {
       const ramp = layer === "moisture" ? MOISTURE_RAMP : NDVI_RAMP;
-      const seedBase = (fieldLabel || "field").split("").reduce((a, c) => a + c.charCodeAt(0), 0);
-      const rnd = mulberry32(seedBase + (layer === "moisture" ? 99 : 42));
       const lats = fieldBounds.map(p => p[0]);
       const lngs = fieldBounds.map(p => p[1]);
       const minLat = Math.min(...lats), maxLat = Math.max(...lats);
       const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
       const fieldPoly = L.polygon(fieldBounds);
       const cellGeoms = [];
-      const cells = 9;
-      for (let r = 0; r < cells; r++) {
-        for (let c = 0; c < cells; c++) {
-          const lat0 = minLat + ((maxLat - minLat) * r) / cells;
-          const lat1 = minLat + ((maxLat - minLat) * (r + 1)) / cells;
-          const lng0 = minLng + ((maxLng - minLng) * c) / cells;
-          const lng1 = minLng + ((maxLng - minLng) * (c + 1)) / cells;
-          const cLat = (lat0 + lat1) / 2, cLng = (lng0 + lng1) / 2;
-          if (!fieldPoly.getBounds().contains([cLat, cLng])) continue;
-          const n = (Math.sin(r * 12.9898 + c * 78.233) + 1) / 2;
-          const tt = Math.min(1, Math.max(0, 0.55 + n * 0.35 + (rnd() - 0.5) * 0.3));
-          const idx = Math.round(tt * (ramp.length - 1));
 
-          const cellNdvi = Math.round((0.15 + tt * 0.7) * 100) / 100;
-          const cellMoisture = Math.round(10 + tt * 30);
-          const cellPestRisk = Math.round((1 - tt) * 80);
+      if (grid && grid.length > 0 && layer === "ndvi") {
+        // REAL DATA PATH — uses actual NDVI values from our backend.
+        // Only applies to the "ndvi" layer, since our grid has no
+        // moisture data — moisture layer still uses the demo fallback.
+        const rows = grid.length;
+        const cols = grid[0].length;
 
-          const rect = L.rectangle([[lat0, lng0], [lat1, lng1]], { color: "none", weight: 0, fillColor: ramp[idx], fillOpacity: 0.55 }).addTo(group);
-          cellGeoms.push({ rect, lat0, lat1, lng0, lng1 });
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            const ndviVal = grid[r][c]; // real value, range -1.0 to 1.0
+            const lat0 = minLat + ((maxLat - minLat) * r) / rows;
+            const lat1 = minLat + ((maxLat - minLat) * (r + 1)) / rows;
+            const lng0 = minLng + ((maxLng - minLng) * c) / cols;
+            const lng1 = minLng + ((maxLng - minLng) * (c + 1)) / cols;
+            const cLat = (lat0 + lat1) / 2, cLng = (lng0 + lng1) / 2;
+            if (!fieldPoly.getBounds().contains([cLat, cLng])) continue;
 
-          const cellData = {
-            row: r, col: c, lat: cLat, lng: cLng,
-            ndvi: cellNdvi, moisture: cellMoisture, pestRisk: cellPestRisk,
-            status: getNdviStatus(cellNdvi),
-          };
-          rect.bindTooltip(`NDVI ${cellNdvi} • ${cellData.status}`, { sticky: true });
-          rect.on("click", () => {
-            cellGeoms.forEach(g => g.rect.setStyle({ weight: 0 }));
-            rect.setStyle({ color: "#ffffff", weight: 2 });
-            onCellSelect?.(cellData);
-          });
+            // Map real NDVI (-1 to 1) onto the color ramp (0 to 1 position)
+            const status = getNdviStatus(ndviVal);
+            const fillColor = STATUS_FILL[status];
+
+            const rect = L.rectangle([[lat0, lng0], [lat1, lng1]], {
+              color: "#ffffff", weight: 1.5, opacity: 0.9, fillColor, fillOpacity: 0.75,
+            }).addTo(group);
+            cellGeoms.push({ rect, lat0, lat1, lng0, lng1 });
+
+            const cellData = {
+              row: r, col: c, lat: cLat, lng: cLng,
+              ndvi: ndviVal, status: getNdviStatus(ndviVal),
+            };
+            rect.bindTooltip(`NDVI ${ndviVal.toFixed(2)} • ${cellData.status}`, { sticky: true });
+            rect.on("click", () => {
+              cellGeoms.forEach(g => g.rect.setStyle({ weight: 0 }));
+              rect.setStyle({ color: "#ffffff", weight: 2 });
+              onCellSelect?.(cellData);
+            });
+          }
+        }
+      } else {
+        // FALLBACK: fake demo grid — used when no real grid data is
+        // passed yet (e.g. pages not updated), or for the moisture
+        // layer, which our backend doesn't provide real data for.
+        const seedBase = (fieldLabel || "field").split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+        const rnd = mulberry32(seedBase + (layer === "moisture" ? 99 : 42));
+        const cells = 9;
+        for (let r = 0; r < cells; r++) {
+          for (let c = 0; c < cells; c++) {
+            const lat0 = minLat + ((maxLat - minLat) * r) / cells;
+            const lat1 = minLat + ((maxLat - minLat) * (r + 1)) / cells;
+            const lng0 = minLng + ((maxLng - minLng) * c) / cells;
+            const lng1 = minLng + ((maxLng - minLng) * (c + 1)) / cells;
+            const cLat = (lat0 + lat1) / 2, cLng = (lng0 + lng1) / 2;
+            if (!fieldPoly.getBounds().contains([cLat, cLng])) continue;
+            const n = (Math.sin(r * 12.9898 + c * 78.233) + 1) / 2;
+                        const tt = Math.min(1, Math.max(0, 0.55 + n * 0.35 + (rnd() - 0.5) * 0.3));
+            const cellNdvi = Math.round((0.15 + tt * 0.7) * 100) / 100;
+            const cellMoisture = Math.round(10 + tt * 30);
+            const cellPestRisk = Math.round((1 - tt) * 80);
+            const cellStatus = getNdviStatus(cellNdvi);
+            const fillColor = STATUS_FILL[cellStatus];
+
+            const rect = L.rectangle([[lat0, lng0], [lat1, lng1]], { color: "#ffffff", weight: 1.5, opacity: 0.9, fillColor, fillOpacity: 0.75 }).addTo(group);
+            cellGeoms.push({ rect, lat0, lat1, lng0, lng1 });
+
+            const cellData = {
+              row: r, col: c, lat: cLat, lng: cLng,
+              ndvi: cellNdvi, moisture: cellMoisture, pestRisk: cellPestRisk,
+              status: getNdviStatus(cellNdvi),
+            };
+            rect.bindTooltip(`NDVI ${cellNdvi} • ${cellData.status}`, { sticky: true });
+            rect.on("click", () => {
+              cellGeoms.forEach(g => g.rect.setStyle({ weight: 0 }));
+              rect.setStyle({ color: "#ffffff", weight: 2 });
+              onCellSelect?.(cellData);
+            });
+          }
         }
       }
     }
@@ -242,7 +287,7 @@ const FieldMap = forwardRef(function FieldMap(
         : `${name} • ${t.layerTrueColor}`;
       boundaryRef.current.bindPopup(label);
     }
-  }, [layer, draw, ready, fieldLabel, ndviValue, moistureValue, t.northField, t.layerTrueColor]);
+  }, [layer, draw, ready, fieldLabel, ndviValue, moistureValue, t.northField, t.layerTrueColor, grid]);
 
   const flyTo = (lat, lng, zoom = 16) => {
     const L = LRef.current, map = mapRef.current;
