@@ -16,8 +16,16 @@ from app.schemas.token import Token
 router = APIRouter()
 
 
+def _normalize_mobile(raw_number: str) -> str:
+    cleaned = raw_number.strip().replace(" ", "").replace("-", "")
+    if cleaned.startswith("+"):
+        cleaned = cleaned[1:]
+    if len(cleaned) == 10 and cleaned.isdigit():
+        cleaned = "91" + cleaned
+    return cleaned
+
+
 def _issue_otp(db: Session, mobile_number: str) -> str:
-    # invalidate any previous unused OTPs for this number
     db.query(OTPVerification).filter(
         OTPVerification.mobile_number == mobile_number,
         OTPVerification.is_used == False,
@@ -32,7 +40,10 @@ def _issue_otp(db: Session, mobile_number: str) -> str:
 
 @router.post("/register", response_model=OTPSentResponse, status_code=status.HTTP_201_CREATED)
 def register(user_in: UserCreate, db: Session = Depends(get_db)):
-    existing_user = db.scalar(select(User).where(User.mobile_number == user_in.mobile_number))
+    user_in.mobile_number = _normalize_mobile(user_in.mobile_number)
+
+    existing_user = db.scalar(select(User).where(
+        User.mobile_number == user_in.mobile_number))
     if existing_user and existing_user.is_verified:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -59,7 +70,10 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=OTPSentResponse)
 def login(payload: MobileRequest, db: Session = Depends(get_db)):
-    user = db.scalar(select(User).where(User.mobile_number == payload.mobile_number))
+    payload.mobile_number = _normalize_mobile(payload.mobile_number)
+
+    user = db.scalar(select(User).where(
+        User.mobile_number == payload.mobile_number))
     if not user or not user.is_verified:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -88,31 +102,41 @@ def verify_otp(payload: OTPVerifyRequest, db: Session = Depends(get_db)):
     )
 
     if not otp_entry:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid OTP.")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid OTP.")
 
     if otp_entry.expires_at < datetime.now(timezone.utc):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="OTP has expired.")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="OTP has expired.")
 
     otp_entry.is_used = True
 
-    user = db.scalar(select(User).where(User.mobile_number == payload.mobile_number))
+    user = db.scalar(select(User).where(
+        User.mobile_number == payload.mobile_number))
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
 
     user.is_verified = True
     db.commit()
 
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(subject=user.id, expires_delta=access_token_expires)
+    access_token_expires = timedelta(
+        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        subject=user.id, expires_delta=access_token_expires)
 
     return {"access_token": access_token, "token_type": "bearer"}
 
 
 @router.post("/resend-otp", response_model=OTPSentResponse)
 def resend_otp(payload: MobileRequest, db: Session = Depends(get_db)):
-    user = db.scalar(select(User).where(User.mobile_number == payload.mobile_number))
+    payload.mobile_number = _normalize_mobile(payload.mobile_number)
+
+    user = db.scalar(select(User).where(
+        User.mobile_number == payload.mobile_number))
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
 
     otp_code = _issue_otp(db, payload.mobile_number)
 

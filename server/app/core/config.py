@@ -11,11 +11,15 @@ class Settings(BaseSettings):
     copernicus_client_id: str | None = None
     copernicus_client_secret: str | None = None
     use_live_satellite: bool = False
+    twilio_account_sid: str | None = None
+    twilio_auth_token: str | None = None
+    twilio_whatsapp_number: str | None = None
+    twilio_sms_number: str | None = None
     GEMINI_API_KEY: str
     OPENWEATHER_API_KEY: str
 
     # Gemini Models
-    GENERATION_MODEL: str = "gemini-2.5-flash"
+    GENERATION_MODEL: str = "gemini-3.6-flash"
     EMBEDDING_MODEL: str = "gemini-embedding-001"
 
     # Knowledge Base / Vector Store
@@ -46,7 +50,7 @@ settings = Settings()
 
 # Backwards compatibility aliases
 GEMINI_API_KEY = settings.GEMINI_API_KEY
-OPENWEATHER_API_KEY = settings.OPENWEATHER_API_KEY 
+OPENWEATHER_API_KEY = settings.OPENWEATHER_API_KEY
 GENERATION_MODEL = settings.GENERATION_MODEL
 EMBEDDING_MODEL = settings.EMBEDDING_MODEL
 KNOWLEDGE_BASE_DIR = settings.KNOWLEDGE_BASE_DIR

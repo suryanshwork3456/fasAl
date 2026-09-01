@@ -40,3 +40,4 @@ uvicorn==0.28.0
 watchfiles==1.2.0
 websockets>=13.0,<17.0
 chromadb==1.5.9
+pip freeze | findstr twilio

@@ -241,15 +241,18 @@ const FieldMap = forwardRef(function FieldMap(
         // FALLBACK: fake demo grid — used when no real grid data is
         // passed yet (e.g. pages not updated), or for the moisture
         // layer, which our backend doesn't provide real data for.
-        const seedBase = (fieldLabel || "field").split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+                  const seedBase = (fieldLabel || "field").split("").reduce((a, c) => a + c.charCodeAt(0), 0);
         const rnd = mulberry32(seedBase + (layer === "moisture" ? 99 : 42));
-        const cells = 9;
-        for (let r = 0; r < cells; r++) {
-          for (let c = 0; c < cells; c++) {
-            const lat0 = minLat + ((maxLat - minLat) * r) / cells;
-            const lat1 = minLat + ((maxLat - minLat) * (r + 1)) / cells;
-            const lng0 = minLng + ((maxLng - minLng) * c) / cells;
-            const lng1 = minLng + ((maxLng - minLng) * (c + 1)) / cells;
+        // Match the real backend grid shape (3 rows x 5 cols) so the
+        // fallback pattern never looks structurally different from
+        // real satellite data — only the values differ.
+        const mockRows = 3, mockCols = 5;
+        for (let r = 0; r < mockRows; r++) {
+          for (let c = 0; c < mockCols; c++) {
+            const lat0 = minLat + ((maxLat - minLat) * r) / mockRows;
+            const lat1 = minLat + ((maxLat - minLat) * (r + 1)) / mockRows;
+            const lng0 = minLng + ((maxLng - minLng) * c) / mockCols;
+            const lng1 = minLng + ((maxLng - minLng) * (c + 1)) / mockCols;
             const cLat = (lat0 + lat1) / 2, cLng = (lng0 + lng1) / 2;
             if (!fieldPoly.getBounds().contains([cLat, cLng])) continue;
             const n = (Math.sin(r * 12.9898 + c * 78.233) + 1) / 2;

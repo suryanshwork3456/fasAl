@@ -63,7 +63,7 @@ async def analyze_crop_image(file: UploadFile):
 
         # 1. Non-blocking async API call to Gemini
         response = await client.aio.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-3.6-flash",
             contents=[image_obj, prompt]
         )
 
